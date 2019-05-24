@@ -76,7 +76,7 @@
           <div class="card-body">
             <!-- drop files -->
             <p>
-              Pour un import CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
+              Pour un géocodage CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
               <i>nom, adresse, code_postal, ville</i>
             </p>
             <b-field>
@@ -241,7 +241,7 @@ export default {
         new Blob([csvString], { type: "text/csv; charset=urf-8" }),
         "upload.csv"
       );
-      fetch("http://api-adresse.data.gouv.fr/search/csv/", {
+      fetch("https://api-adresse.data.gouv.fr/search/csv/", {
         method: "POST",
         body: requestBody
       })
