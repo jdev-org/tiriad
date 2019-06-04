@@ -1,23 +1,25 @@
+<!-- eslint-disable -->
 <template>
-  <div id="main" class="drop container-fluid p-0">    
-    <div id="content" class="row-fuild justify-content-center"> 
+  <div id="main" class="drop container-fluid p-0">
+    <div id="content" class="row-fuild justify-content-center">
       <nav class="navbar fixed-top navbar-light p-1 col-12">
         <autocomplete :zoom="zoomAdress"/>
-      </nav>      
+      </nav>
       <vuemap/>
       <div class="row-fluid col-12 p-0">
         <toc/>
       </div>
-      <logo/>
-    </div>    
+      <!--logo/-->
+    </div>
   </div>
 </template>
 
 <script>
-import vuemap from './vuemap.vue'
-import autocomplete from './autocomplete.vue'
-import logo from './logo.vue'
-import toc from './toc.vue'
+/* eslint-disable */
+import vuemap from './vuemap.vue';
+import autocomplete from './autocomplete.vue';
+import logo from './logo.vue';
+import toc from './toc.vue';
 
 export default {
   name: 'vuemain',
@@ -27,13 +29,13 @@ export default {
     logo,
     toc,
   },
-  data () {
+  data() {
     return {
-      zoomAdress: 12
+      zoomAdress: 12,
     };
   },
-  method: { // pass methods here 
-  }
+  method: { // pass methods here
+  },
 };
 </script>
 

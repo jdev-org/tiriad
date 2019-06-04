@@ -1,3 +1,4 @@
+<!-- eslint-disable -->
 <template>
   <div class="vuemap">
     <vl-map
@@ -14,10 +15,10 @@
       <vl-layer-tile v-for="layer in baseLayers" :key="layer.name" :id="layer.name" :visible="layer.visible">
         <component :is="'vl-source-' + layer.name" v-bind="layer"></component>
       </vl-layer-tile>
-      <!--// base layers -->      
+      <!--// base layers -->
 
       <!-- other layers from config -->
-      <component v-for="layer in layers" :is="layer.cmp" :if="layer.visible" :key="layer.id" v-bind="layer">
+      <component v-for="layer in initLayers" :is="layer.cmp" :if="layer.visible" :key="layer.id" v-bind="layer">
         <!-- add vl-source-* -->
         <component :is="layer.source.cmp" v-bind="layer.source">
           <!-- add static features to vl-source-vector if provided -->
@@ -74,27 +75,34 @@
 </template>
 
 <script>
-import OverviewMap from "ol/control/OverviewMap";
-import { createProj, addProj, findPointOnSurface, createStyle } from 'vuelayers/lib/ol-ext'
-import VectorLayer from "ol/layer/Vector.js";
-import VectorSource from "ol/source/Vector.js";
-import KML from "ol/format/KML";
-import Style from "ol/style/Style"
-import Circle from "ol/style/Circle"
-import Fill from "ol/style/Fill"
-import Stroke from "ol/style/Stroke"
-import GeoJSON from "ol/format/GeoJSON.js";
+/* eslint-disable */
+import OverviewMap from 'ol/control/OverviewMap';
+import {
+  createProj, addProj, findPointOnSurface, createStyle,
+} from 'vuelayers/lib/ol-ext';
+import VectorLayer from 'ol/layer/Vector.js';
+import VectorSource from 'ol/source/Vector.js';
+import KML from 'ol/format/KML';
+import Style from 'ol/style/Style';
+import Circle from 'ol/style/Circle';
+import Fill from 'ol/style/Fill';
+import Icon from 'ol/style/Icon';
+import Stroke from 'ol/style/Stroke';
+import GeoJSON from 'ol/format/GeoJSON.js';
 import fromLonLat from 'ol/proj.js';
-import axios from 'axios'
-import kebabCase from 'lodash'
+import axios from 'axios';
+import kebabCase from 'lodash';
+import Cluster from 'ol/source/Cluster'
+import TileLayer from 'ol/layer/Tile'
+import OSM from 'ol/source/OSM'
 
 // bootstrap tooltips
-$(document).ready(function(){
-  $('[data-toggle="tooltip"]').tooltip(); 
+$(document).ready(() => {
+  $('[data-toggle="tooltip"]').tooltip();
 });
 
 export default {
-  name: "vuemap",
+  name: 'vuemap',
   data() {
     return {
       visible: true,
@@ -103,124 +111,138 @@ export default {
       zoom: 6,
       center: [3.33357, 46.87760],
       rotation: 0,
+      /* DEPRECATED */
+      baseLayers: [],
+      initLayers: [],
       /* CONTROLS */
       controls: {},
-      layers: this.$store.state.layers,
-      baseLayers: [{
-        name: 'osm',
-        title: 'OpenStreetMap',
+      firstLayer: [{
+        format:'TILE',
+        type: 'OSM',
+        name: 'OpenStreetMap',
+        id: this.getRandomId()
+      },{
+        id: this.getRandomId(),
+        format: 'KML',
+        url: './data/kml/regions_4326.kml',
+        name: 'Régions',
         visible: true,
-      }]
+      },{
+        id: this.getRandomId(),
+        name: 'Départements',
+        visible: true,
+        url: './data/kml/departements_4326.kml',
+        format: 'KML'
+      },{
+        id: this.getRandomId(),
+        name: 'Point de distribution',
+        format: 'KML',
+        url: './data/kml/points_distribution.kml',
+        visible: true,
+        style: this.createDistribClusterStyle(),
+        cluster: true,
+        distance: 50        
+      },{
+        id: this.getRandomId(),
+        name: 'Clients',
+        format: 'GEOJSON',
+        url: './data/geojson/clients_4326.geojson',
+        visible: true,
+        style: this.createClientClusterStyle(),
+        cluster: true,
+        distance: 50
+      }],
     };
   },
   props: {
-    msgTest: String
+    msgTest: String,
   },
   methods: {
     /**
      * Manage TOC visibility
      */
-    displayToc: function () {
-      //this.tocIsVisible = this.tocIsVisible ? false : true;
-      if(this.$store.state.displayToc === ''){
-        this.$store.commit('setDisplayToc','none')
+    displayToc() {
+      // this.tocIsVisible = this.tocIsVisible ? false : true;
+      if (this.$store.state.displayToc === '') {
+        this.$store.commit('setDisplayToc', 'none');
       } else {
-        this.$store.commit('setDisplayToc','')
-      }      
+        this.$store.commit('setDisplayToc', '');
+      }
     },
     /**
      * @return zoom to update map view
      */
-    getZoom: function () {
-      if(this.zoom){
-        this.$refs.zoom = this.zoom
-        return this.$refs.zoom
-      } else {
-        return 6
-      }      
+    getZoom() {
+      if (this.zoom) {
+        this.$refs.zoom = this.zoom;
+        return this.$refs.zoom;
+      }
+      return 6;
     },
     /**
      * @return center as coordinates array to update view
      */
-    getCenter: function () {
-      if(this.center){
-        this.$refs.center = this.center        
-        return this.$refs.center
-      } else {        
-        return [3.33357, 46.87760]
+    getCenter() {
+      if (this.center) {
+        this.$refs.center = this.center;
+        return this.$refs.center;
       }
+      return [3.33357, 46.87760];
     },
     /**
      * generate random value as ID
      * @return Number
      */
-    getRandomId () {
+    getRandomId() {
       return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     },
     /**
-     * Create cluster style
-     * @return ol.style.Style
+     * Return valid vl-geom-* to create VueLayers layer
+     * @return VueLayers component
      */
-    clusterStyleFunc () {
-      const cache = {}
-      return function __clusterStyleFunc (feature) {
-        const size = feature.get('features').length
-        let style = cache[size]
-        let sizeRules = function (size) {
-          if (size === 1) {
-            return 10
-          } else if (size > 1 && size < 16) {
-            return 15
-          } else if (size > 15 && size < 31) {
-            return 20
-          } else if (size > 30 && size < 40) {
-            return 25
-          } else {
-            return 30
-          }
-        }
-        if (!style) {
-          if (size > 1) {
-            style = createStyle({
-              imageRadius: sizeRules(size), // default 10,
-              strokeColor: '#fff',
-              fillColor: 'rgba(234, 49, 8, 1)',
-              text: size.toString(),
-              textFillColor: '#fff',
-            })
-          } else {
-            style = createStyle({
-              imageSrc: './img/star-orange-red-gmap.png',
-              imageScale: 0.4,
-            })
-          }
-          cache[size] = style
-        }
-        return [style]
-      }
+    geometryTypeToCmpName(type) {
+      return `vl-geom-${kebabCase(type.toLowerCase())}`;
     },
     /**
-     * Create cluster style
-     * @return ol.style.Style
-     */    
-    clusterKmlStyleFunc () {
-      const cache = {}
-      return function __clusterKmlStyleFunc (feature) {
-        const size = feature.get('features').length
-        let style = cache[size]
-        let sizeRules = function (size) {
+     * Display or hide overview map
+     */
+    overView() {
+      const oldState = this.controls.overView.getCollapsed();
+      const newState = !oldState;
+      this.controls.overView.setCollapsed(newState);
+    },
+    /**
+     * @return ol.Map from Vuex store
+     */
+    getMap() {
+      return this.$refs.map.$map;
+    },
+    /**
+     * Add ol.Map to store to be share between all components and give full access to ol.Map and others
+     * ol.* elements
+     */
+    setMap(olMap) {
+      if (this.$store && this.$store.state.map) {
+        this.$store.commit('setMap', olMap);
+      }
+    },
+    createDistribClusterStyle() {
+      let cache = {};
+      return function(feature){
+        const size = feature.get('features').length;
+        let style = cache[size];
+        const sizeRules = function (size) {
           if (size === 1) {
-            return 10
-          } else if (size > 1 && size < 16) {
-            return 15
-          } else if (size > 15 && size < 31) {
-            return 20
-          } else if (size > 30 && size < 40) {
-            return 25
-          } else {
-            return 30
+            return 10;
+          } if (size > 1 && size < 16) {
+            return 15;
+          } if (size > 15 && size < 31) {
+            return 20;
+          } if (size > 30 && size < 40) {
+            return 25;
           }
-        }
+          return 30;
+        };        
         if (!style) {
           if (size > 1) {
             style = createStyle({
@@ -230,166 +252,164 @@ export default {
               text: size.toString(),
               textFillColor: '#fff',
               opacity: 0.5,
-            })
+            });
           } else {
-            style = createStyle({
-              imageSrc: './img/star-orange-gmap.png',
-              imageScale: 0.4,
-            })
+            style = new Style({
+              image: new Icon({
+                src: './img/star-orange-gmap.png',
+                scale: 0.4
+            }),
+          });
           }
-          cache[size] = style
+          cache[size] = style;
         }
-        return [style]
+        return style;
+      }
+    },
+    createClientClusterStyle() {
+      let cache = {};
+      return function(feature){
+        const size = feature.get('features').length;
+        let style = cache[size];
+        const sizeRules = function (size) {
+          if (size === 1) {
+            return 10;
+          } if (size > 1 && size < 16) {
+            return 15;
+          } if (size > 15 && size < 31) {
+            return 20;
+          } if (size > 30 && size < 40) {
+            return 25;
+          }
+          return 30;
+        };  
+        
+        if (!style) {
+          if (size > 1) {
+            style = createStyle({
+              imageRadius: sizeRules(size), // default 10,
+              strokeColor: '#fff',
+              fillColor: 'rgba(234, 49, 8, 1)',
+              text: size.toString(),
+              textFillColor: '#fff',
+              opacity: 0.5,
+            });
+          } else {
+            style = new Style({
+              image: new Icon({
+                src: './img/star-orange-red-gmap.png',
+                scale: 0.4
+            }),
+          });
+          }
+          cache[size] = style;
+        }
+        return style;
       }
     },
     /**
-     * Return valid vl-geom-* to create VueLayers layer
-     * @return VueLayers component
+     * Create layer from given properties
      */
-    geometryTypeToCmpName (type) {
-      return 'vl-geom-' + kebabCase(type.toLowerCase())
-    },
-    /**
-     * Display or hide overview map
-     */
-    overView() {
-      let oldState = this.controls.overView.getCollapsed();
-      let newState = oldState ? false : true;
-      this.controls.overView.setCollapsed(newState);
-    },
-    /**
-     * @return ol.Map from Vuex store
-     */    
-    getMap() {
-      return this.$refs.map.$map;
-    },
-    /**
-     * Add ol.Map to store to be share between all components and give full access to ol.Map and others
-     * ol.* elements
-     */
-    setMap(olMap) {
-      if(this.$store && this.$store.state.map){
-        this.$store.commit('setMap', olMap)
+    createLayer(params) {
+      let app = this;
+      let formatFactory = null;
+      switch (params.format) {
+        case 'KML':
+          formatFactory = new KML();
+          break;
+        case 'GEOJSON':
+          formatFactory = new GeoJSON();
+          break;
+        case 'TILE':
+          formatFactory = new TileLayer();
+        default:
+          null
+      };
+      // for basemap
+      if(params.format === 'TILE' && params.type == 'OSM') {
+        var raster = new TileLayer({
+          source: new OSM(),
+          name: params.name ? params.name : param.type + app.getRandomId(),
+          id: params.id ? params.id : app.getRandomId()
+        });
+        return raster
       }
+      // for vector sources
+      let source = new VectorSource({
+        url: params.url,
+        format: formatFactory
+      });
+      // create clustered vector
+      if(params.cluster && params.style && params.distance){
+        source = new Cluster({
+          source: source,
+          distance: params.distance,
+        })
+      }
+      let layer = new VectorLayer({
+        source: source
+      });
+      if(params.style){        
+        layer.setStyle(params.style)
+      }
+      let name = params.name ? params.name : '';
+      let id = params.id ? params.id : '';
+      layer.setProperties({
+        'name':name,
+        'id': id
+      });
+      layer.setVisible(params.visible);
+      return layer;
     },
     /**
      * Fire when VueLayers Map is mounted after map init
      */
-    onMapMounted() {            
-      let app = this
+    onMapMounted() {
+      const app = this;
       // get map from vue instance
-      let map = this.getMap();      
-      // set map to global store
-      this.setMap(map)
-      // set default view context
-      let zoom = this.zoom
-      map.getView().animate({
-        zoom: zoom
-      })
-      // insert new ol map controls
-      if (map) {
+      const map = this.getMap();
+
+      if (map) {        
+        // set map to global store
+        this.setMap(map);
+        // set default view context
+        const { zoom } = this;        
+        map.getView().animate({
+          zoom,
+        });        
         // now ol.Map instance is ready and we can work with it directly
         this.controls.overView = new OverviewMap({
           collapsed: true,
-          collapsible: true
+          collapsible: true,
         });
-        map.getControls().extend([this.controls.overView]);        
-        this.$store.commit('setLayer',[
-          {
-            id: app.getRandomId(),
-            title: 'Régions',
-            cmp: 'vl-layer-vector',
-            visible: true,
-            renderMode: 'image',
-            source: {
-              cmp: 'vl-source-vector',
-              url: './data/kml/regions_4326.kml',
-              formatFactory: function () {
-                return new KML()
-              },
-            },
-          },
-          {
-            id: app.getRandomId(),
-            title: 'Départements',
-            cmp: 'vl-layer-vector',
-            visible: false,
-            renderMode: 'image',
-            source: {
-              cmp: 'vl-source-vector',
-              url: './data/kml/departements_4326.kml',
-              formatFactory: function () {
-                return new KML()
-              },
-            },
-          },
-          {
-            id: app.getRandomId(),
-            title: 'Points de distribution',
-            cmp: 'vl-layer-vector',
-            visible: true,
-            renderMode: 'image',
-            source: {
-              cmp: 'vl-source-cluster',
-              distance: 50,
-              source: {
-                cmp: 'vl-source-vector',
-                url: './data/kml/points_distribution.kml',
-                formatFactory: function () {
-                  return new KML({
-                    // deactive default style
-                    extractStyles: false,
-                  })
-                },
-              },
-            },
-            style: [
-              {
-                cmp: 'vl-style-func',
-                factory: app.clusterKmlStyleFunc,
-              },
-            ],
-          },
-          {
-            id: app.getRandomId(),
-            title: 'Clients',
-            cmp: 'vl-layer-vector',
-            renderMode: 'image',
-            visible: true,
-            // Cluster source (vl-source-cluster) wraps vector source (vl-source-vector)
-            source: {
-              cmp: 'vl-source-cluster',
-              distance: 50,
-              source: {
-                cmp: 'vl-source-vector',
-                url: './data/geojson/clients_4326.geojson',
-              },
-            },
-            style: [
-              {
-                cmp: 'vl-style-func',
-                factory: app.clusterStyleFunc,
-              },
-            ],
-          }]
-        )
+        map.getControls().extend([this.controls.overView]);
+        // event to update TOC content and display new layers layers
+        map.getLayers().on('add', function(e) {
+          app.$store.commit('setLayerToToc', e.element)
+          console.log(e.element);
+        });
+
+        this.firstLayer.forEach(function(p) {
+          let newLayer = app.createLayer(p);
+          map.addLayer(newLayer);
+        });
       }
     },
     /**
      * Fire when user click in zoom out button
      */
     zoomOut() {
-      let view = this.$refs.map.$map.getView();
+      const view = this.$refs.map.$map.getView();
       view.animate({ zoom: view.getZoom() - 1 });
     },
     /**
      * Fire when user click in zoom in button
      */
     zoomIn() {
-      let view = this.$refs.map.$map.getView();
+      const view = this.$refs.map.$map.getView();
       view.animate({ zoom: view.getZoom() + 1 });
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -1,3 +1,4 @@
+<!-- eslint-disable -->
 <template>
   <div id="toc" :style="{display: isTocVisible()}" class="card col-12 col-md-5 col-xl-3 p-0">
     <div id="accordion">
@@ -21,18 +22,17 @@
           data-parent="#accordion"
         >
           <div class="card-body">
-            <ul id="layersList" class="list-group list-group-horizontal-sm">
-              <li class="list-group-item col-12">
-                <!-- layers options -->
+            <ul id="layersList" class="list-group">
+              <li class="list-group-item col-12" v-for="layer in layers" :key="layer.id" >
+                <!-- layers options -->                
                 <div class="btn-group">
-                  <button type="button" class="btn btn-sm">
+                  <button type="button" class="btn btn-sm py-0 px-2" @click="displayLayer" :value="layer.getProperties().id">
                     <i class="fa fa-eye"></i>
+                  </button>                  
+                  <button type="button" class="btn btn-sm py-0 px-2" @click="destroyLayer" :value="layer.getProperties().id">
+                    <i class="fa fa-trash" activate="false"></i>
                   </button>
-                  <button type="button" class="btn btn-sm disabled">Title</button>
-                  <button type="button" class="btn btn-sm">
-                    <i class="fa fa-trash"></i>
-                  </button>
-                  <button type="button" class="btn btn-sm" style="display:none;">
+                  <button type="button" class="btn btn-sm py-0 px-2" style="display:none;">
                     <i class="fa fa-filter"></i>
                   </button>
                   <button
@@ -42,7 +42,7 @@
                     aria-haspopup="true"
                     aria-expanded="false"
                     style="display:none;"
-                  ></button>
+                  ></button><p class="pl-2 m-0">{{layer.getProperties().name}}</p>
                   <div class="dropdown-menu dropdown-menu-right" style="display:none;">
                     <button class="dropdown-item" type="button">Infos</button>
                     <button class="dropdown-item" type="button">Style</button>
@@ -76,7 +76,7 @@
           <div class="card-body">
             <!-- drop files -->
             <p>
-              Pour un géocodage CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
+              Pour un import CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
               <i>nom, adresse, code_postal, ville</i>
             </p>
             <b-field>
@@ -93,7 +93,7 @@
             </b-field>
             <div class="form-group">
               <label for="srsForm">Sélectionner une projection :</label>
-              <select class="form-control" id="srsForm" @input='setSelectedSrs'>                
+              <select class="form-control" id="srsForm" @input='setSelectedSrs'>
                 <option>EPSG:3857</option>
                 <option>EPSG:4326</option>
                 <option>EPSG:2154</option>
@@ -104,16 +104,6 @@
             data-toggle="tooltip" data-html="true" title="<em>Cliquer pour plus d'informations</em>"
             type="button" class="btn" ><i class="fas fa-info"></i></button>
             <!-- drop CSV file -->
-            <div class="tags">
-              <span v-for="(file, index) in dropFiles" :key="index" class="tag is-primary">
-                {{file.name}}
-                <button
-                  class="delete is-small"
-                  type="button"
-                  @click="deleteDropFile(index)"
-                ></button>
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -121,104 +111,146 @@
   </div>
 </template>
 <script>
-import axios from "axios";
-import kebabCase from "lodash";
-import Papa from "papaparse";
-import GeoJSON from "ol/format/GeoJSON.js";
-import VectorSource from "ol/source/Vector.js";
-import VectorLayer from "ol/layer/Vector.js";
-import createStyle from "vuelayers/lib/ol-ext";
-import Style from "ol/style/Style";
-import Circle from "ol/style/Circle";
-import CircleStyle from "ol/style.js";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
-import Icon from "ol/style/Icon";
-import Text from "ol/style/Text";
-import { transform } from "ol/proj";
+/* eslint-disable */
+import axios from 'axios';
+import kebabCase from 'lodash';
+import Papa from 'papaparse';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
+import createStyle from 'vuelayers/lib/ol-ext';
+import Style from 'ol/style/Style';
+import Circle from 'ol/style/Circle';
+import CircleStyle from 'ol/style.js';
+import Fill from 'ol/style/Fill';
+import Stroke from 'ol/style/Stroke';
+import Icon from 'ol/style/Icon';
+import Text from 'ol/style/Text';
+import { transform } from 'ol/proj';
 
 // bootstrap tooltips
-$(document).ready(function(){
-  $('[data-toggle="tooltip"]').tooltip(); 
+$(document).ready(() => {
+  $('[data-toggle="tooltip"]').tooltip();
 });
 
 export default {
-  name: "toc",
+  name: 'toc',
   components: {},
   data() {
     return {
       dropFiles: [],
-      jsonLayerName: "",
-      jsonFeatures: "",
-      uploadSrs: "EPSG:4326"
+      jsonLayerName: '',
+      jsonFeatures: '',
+      uploadSrs: 'EPSG:4326',
+      map: this.$store.state.map,
+      layers: this.$store.state.tocLayers,
     };
   },
   methods: {
+    removeLayerById(id) {
+      // remove layer
+      this.$store.state.map.removeLayer(this.getLayerById(id));
+    },
+    getLayerById(id) {
+      let findLayer;
+      let layers = this.$store.state.map.getLayers().array_;      
+      layers.forEach(function(layer){        
+        if(id === layer.get('id')){
+          findLayer = layer;
+        }
+      });
+      return findLayer;
+    },
+    destroyLayer(e) {
+      let isBtn = e.target.type == "button" ? true : false;
+      let layerId = isBtn ? e.target.value : e.target.parentElement.value;
+      // remove layer
+      this.removeLayerById(layerId);
+      // remove li container
+      e.target.closest("li").remove();
+    },
+    displayLayer(e) {
+      // get icon element
+      let isBtn = e.target.type == "button" ? true : false;
+      let domEl = isBtn ? e.target.firstChild : e.target;
+      // change layer visiblity
+      let layerId = isBtn ? e.target.value : e.target.parentElement.value;
+      if(layerId){
+        let layer = this.getLayerById(layerId);
+        if(layer.getVisible()){
+          domEl.className="far fa-eye-slash"
+          layer.setVisible(false)
+        } else {
+          domEl.className="fas fa-eye"
+          layer.setVisible(true)
+        }
+      }
+    },
     /*
     * Fire when user select EPSG code
-    */    
-    setSelectedSrs: function(e) {
-      this.uploadSrs = e.srcElement.value
+    */
+    setSelectedSrs(e) {
+      this.uploadSrs = e.srcElement.value;
     },
     /*
     * Manage to visibility
     */
-    isTocVisible: function() {      
+    isTocVisible() {
       return this.$store.state.displayToc;
     },
     /**
      * File reader
      */
     readFile(blob, callback) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = callback;
       reader.readAsText(blob);
     },
     /**
      * Read csv to transform to geoJSON
      */
-    csvToJsonPoints(name, crs, csvObject) {
-      let app = this;
+    csvToJsonPoints(fileName, crs, csvObject) {
+      const app = this;
       // layer skeleton
-      let geojsonLayer = {
-        type: "FeatureCollection",
+      const geojsonLayer = {
+        type: 'FeatureCollection',
         crs: {
-          type: "name",
+          type: 'name',
           properties: {
-            name: crs // ex: EPSG:4326
-          }
+            name: crs, // ex: EPSG:4326
+          },
         },
-        features: []
+        features: [],
       };
 
       // feature skeleton
-      let feature = {
-        type: "Feature",
+      const feature = {
+        type: 'Feature',
         geometry: {
-          type: "Point",
-          coordinates: []
-        }
+          type: 'Point',
+          coordinates: [],
+        },
       };
 
       // get columns name
-      let colName = csvObject[0];
+      const colName = csvObject[0];
       csvObject.splice(0, 1);
 
       // parse attributes values
-      csvObject.forEach(function(line, v) {
-        let properties = {};
-        line.forEach(function(attribute, i) {
-          let name = colName[i].replace(" ", "_");
+      csvObject.forEach((line, v) => {
+        const properties = {};
+        line.forEach((attribute, i) => {
+          const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
         });
         // clone feature skeleton
         if (properties.longitude && properties.latitude) {
-          let newFeature = JSON.parse(JSON.stringify(feature));
+          const newFeature = JSON.parse(JSON.stringify(feature));
           // create new feature
           newFeature.properties = properties;
-          let x = properties.longitude.replace(".", ",");
+          let x = properties.longitude.replace('.', ',');
           x = parseFloat(properties.longitude);
-          let y = properties.latitude.replace(".", ",");
+          let y = properties.latitude.replace('.', ',');
           y = parseFloat(properties.latitude);
           newFeature.geometry.coordinates.push(x);
           newFeature.geometry.coordinates.push(y);
@@ -226,113 +258,111 @@ export default {
           geojsonLayer.features.push(newFeature);
         }
       });
-      let srs = geojsonLayer.crs.properties.name ? geojsonLayer.crs.properties.name : ''
-      this.displayJson(geojsonLayer, true, srs)
+      const srs = geojsonLayer.crs.properties.name ? geojsonLayer.crs.properties.name : '';
+      this.displayJson(geojsonLayer, srs, fileName);
     },
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
      */
     csvToApi(csvString, fileName) {
       const requestBody = new FormData();
-      let app = this;
-      requestBody.append("delimiter", ";");
+      const app = this;
+      requestBody.append('delimiter', ';');
       requestBody.append(
-        "data",
-        new Blob([csvString], { type: "text/csv; charset=urf-8" }),
-        "upload.csv"
+        'data',
+        new Blob([csvString], { type: 'text/csv; charset=urf-8' }),
+        'upload.csv',
       );
-      fetch("https://api-adresse.data.gouv.fr/search/csv/", {
-        method: "POST",
-        body: requestBody
+      fetch('http://api-adresse.data.gouv.fr/search/csv/', {
+        method: 'POST',
+        body: requestBody,
       })
         .then(res => res.text())
-        .then(text => {
-          let csvParsed = Papa.parse(text);
-          fileName = fileName.replace(".csv", "");
-          app.csvToJsonPoints(fileName, "EPSG:4326", csvParsed.data);
+        .then((text) => {
+          const csvParsed = Papa.parse(text);
+          fileName = fileName.replace('.csv', '');
+          app.csvToJsonPoints(fileName, 'EPSG:4326', csvParsed.data);
         });
     },
     /**
      * Reproject features array
      */
     reprojectFeatures(featuresArray, srs) {
-      let reprojFeatures = [];
-      featuresArray.forEach(function(f){
-        f.getGeometry().transform(srs,'EPSG:3857')
-        reprojFeatures.push(f)
+      const reprojFeatures = [];
+      featuresArray.forEach((f) => {
+        f.getGeometry().transform(srs, 'EPSG:3857');
+        reprojFeatures.push(f);
       });
-      return reprojFeatures  
+      return reprojFeatures;
     },
     /**
      * From json object, reproject features and add them to map as vector layer
      */
-    displayJson (geojsonObject, toReproj, srs) {
-      let features = (new GeoJSON()).readFeatures(geojsonObject)
+    displayJson(geojsonObject, srs, layerName) {
+      let app = this;
+      let features = (new GeoJSON()).readFeatures(geojsonObject);
       // reproject features
-      if(srs){
-        features = this.reprojectFeatures(features, srs)
-      } else {        
-        features = this.reprojectFeatures(features, this.uploadSrs)
-      }        
+      if (srs) {
+        features = this.reprojectFeatures(features, srs);
+      } else {
+        features = this.reprojectFeatures(features, this.uploadSrs);
+      }
       // create new vector and source
-      let vectorSource = new VectorSource({
-        features: features
-      })
-      let vectorLayer = new VectorLayer({
-        source: vectorSource
-      })
+      const vectorSource = new VectorSource({
+        features
+      });
+      const vectorLayer = new VectorLayer({
+        source: vectorSource,
+        name: layerName,
+        addToToc: true,
+        id: layerName
+      });
       // add to map
-      this.$store.state.map.addLayer(vectorLayer)
+      this.$store.state.map.addLayer(vectorLayer);
     },
     /**
      * Search and remove layer by name
      */
     removeLayer(layerName) {
-      this.$store.commit("removeLayer", layerName);
+      this.$store.commit('removeLayer', layerName);
     },
     /*
      * read json file
      */
-    readJson(file,e) {
-      let rg = new RegExp("[^.]+");
-      let name = file.name.match(rg)[0];
-      let content = ""
-      let jsonFeatures = ""
+    readJson(file, e) {
+      const rg = new RegExp('[^.]+');
+      const name = file.name.match(rg)[0];
+      let content = '';
+      let jsonFeatures = '';
       this.removeLayer(name);
-      if (typeof e.target.result == "string") {
+      if (typeof e.target.result === 'string') {
         content = JSON.stringify(e.target.result);
-        let v = JSON.parse(content);
+        const v = JSON.parse(content);
         jsonFeatures = JSON.parse(v);
-        this.displayJson(jsonFeatures)              
+        this.displayJson(jsonFeatures,'', name);
       }
     },
     /**
      * Read upload file
      */
     readUploadFile() {
-      let app = this;
-      this.jsonLayerName = "";
-      this.jsonFeatures = "";
-      this.content = "";
+      const app = this;
+      this.jsonLayerName = '';
+      this.jsonFeatures = '';
+      this.content = '';
       if (this.dropFiles.length > 0) {
-        // fire read file        
-        let file = app.dropFiles[app.dropFiles.length - 1]
-        this.readFile(file, function(e) {
-          if (file.name.indexOf("csv") < 0) {
-            app.readJson(file,e)
+        // fire read file
+        const file = app.dropFiles[app.dropFiles.length - 1];
+        this.readFile(file, (e) => {
+          if (file.name.indexOf('csv') < 0) {
+            app.readJson(file, e);
           } else {
             app.csvToApi(e.target.result, app.dropFiles[0].name);
           }
         });
       }
     },
-    /**
-     * Clean droped files
-     */
-    deleteDropFile(index) {
-      this.dropFiles.splice(index, 1);
-    },
-  }
+  },
 };
 </script>
 
@@ -351,4 +381,3 @@ export default {
     0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 </style>
-

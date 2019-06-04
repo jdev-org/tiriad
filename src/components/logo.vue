@@ -1,3 +1,4 @@
+<!-- eslint-disable -->
 <template>
     <div id="logo-brand" class="logo-org col-8 col-xs-5 col-sm-2 col-md-2">
         <a href="http://distillerie-vercors.com">
@@ -6,9 +7,10 @@
     </div>
 </template>
 <script>
+/* eslint-disable */
 export default {
-    name:"logo"    
-}
+  name: 'logo',
+};
 </script>
 <style scoped>
 .logo-org {
@@ -23,5 +25,3 @@ export default {
 	float: right;
 }
 </style>
-
-
