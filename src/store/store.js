@@ -68,8 +68,7 @@ export const store = new Vuex.Store({
       // manage case where layer is not to insert in TOC by 'addToToc' property
       let addLayer = layer.getProperties() && layer.getProperties().addToToc === false ? false : true
       if(addLayer) {
-        state.tocLayers.push(layer);
-        console.log(layer.getProperties().name)
+        state.tocLayers.unshift(layer)
       }
     },
     /**
