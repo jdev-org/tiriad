@@ -14,28 +14,28 @@ export const store = new Vuex.Store({
   },
   mutations: {
     /**
-         * setMap is use to share map
-         * @param {Object} state
-         * @param {ol.Map} olMap
-         */
+     * setMap is use to share map
+     * @param {Object} state
+     * @param {ol.Map} olMap
+     */
     setMap(state, olMap) {
       state.map = olMap;           
     },
     /**
-         * setMap is use to add layers to map from array
-         * @param {Object} state
-         * @param {Array} layers as array taht contains layers
-         */
+     * setMap is use to add layers to map from array
+     * @param {Object} state
+     * @param {Array} layers as array taht contains layers
+     */
     setLayer(state, layers) {
       layers.forEach((l) => {
         state.vuelayers.push(l);
       });
     },
     /**
-         * Remove a given layer from map
-         * @param {Object} state
-         * @param {String} name of layer as String
-         */
+     * Remove a given layer from map
+     * @param {Object} state
+     * @param {String} name of layer as String
+     */
     removeLayer(state, name) {
       state.vuelayers.forEach((layer) => {
         if (layer.title == name) {
@@ -44,38 +44,46 @@ export const store = new Vuex.Store({
       });
     },
     /**
-         * setMap is use to add layers to map from array
-         * @param {Object} state
-         * @param {Integer} val set zoom level
-         */
+     * setMap is use to add layers to map from array
+     * @param {Object} state
+     * @param {Integer} val set zoom level
+     */
     setZoom(state, val) {
       state.zoomAdress = val;
     },
     /**
-         * setMap is use to add layers to map from array
-         * @param {Object} state
-         * @param {Boolean} bool as true to display toc component
-         */
+     * setMap is use to add layers to map from array
+     * @param {Object} state
+     * @param {Boolean} bool as true to display toc component
+     */
     setDisplayToc(state, bool) {
       state.displayToc = bool;
     },
     /** 
-         * setLayerToToc is use to set new state of TOC visibility
-         * @param {Object} state
-         * @param {Boolean} bool
-         */    
+     * setLayerToToc is use to set new state of TOC visibility
+     * @param {Object} state
+     * @param {Boolean} bool
+     */    
     setLayerToToc(state, layer) {
       // manage case where layer is not to insert in TOC by 'addToToc' property
-      let addLayer = layer.getProperties() && layer.getProperties().addToToc === false ? false : true
+      let addLayer = layer.getProperties() && layer.getProperties().addToToc === false ? false : true;
       if(addLayer) {
-        state.tocLayers.unshift(layer)
+        
+        state.tocLayers.unshift(layer);
       }
     },
+    removeTocLayer(state, layerId) {
+      state.tocLayers.forEach(function(lyr,i){
+        if(lyr.getProperties().id === layerId) {
+          state.tocLayers.splice(i,1);
+        }
+      });
+    },
     /**
-         * Remove actual list of TOC layers and replace by all layers find in map
-         * @param {Object} state 
-         * @param {Array} layers from map
-         */
+     * Remove actual list of TOC layers and replace by all layers find in map
+     * @param {Object} state 
+     * @param {Array} layers from map
+     */
     updateToc(state, layers) {
       state.tocLayers = [];
       // keep empty to clean toc
@@ -88,9 +96,9 @@ export const store = new Vuex.Store({
   },
   getters: {
     /**
-         * @param {Object} state
-         * All return asked from store
-         */
+     * @param {Object} state
+     * All return asked from store
+     */
     getMap: state => state.map,
     getLayers: state => state.vuelayers,
     getZoomAdress: state => state.zoomAdress,

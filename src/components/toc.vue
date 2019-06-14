@@ -217,6 +217,16 @@ export default {
       // remove layer
       this.$store.state.map.removeLayer(this.getLayerById(id));
     },
+    getLayerByName(name){
+      let findLayer;
+      let layers = this.$store.state.map.getLayers().array_;
+      layers.forEach(function(layer){        
+        if(name === layer.get('name')){
+          findLayer = layer;
+        }
+      });
+      return findLayer      
+    },
     /**
      * Return layer
      * @param id - search layer id
@@ -425,6 +435,13 @@ export default {
         addToToc: true,
         id: layerName
       });
+      // remove layer if already exist
+      let existLyr = this.getLayerByName(layerName);
+      if(existLyr) {
+        let id = existLyr.getProperties().id
+        this.removeLayerById(id);
+        this.$store.commit("removeTocLayer",id);
+      }
       // add to map
       this.$store.state.map.addLayer(vectorLayer);
     },
@@ -461,17 +478,18 @@ export default {
       this.content = '';
       if (this.dropFiles.length > 0) {
         // fire read file
-        const file = app.dropFiles[app.dropFiles.length - 1];
+        const file = this.dropFiles[this.dropFiles.length - 1];
         this.readFile(file, (e) => {
           if (file.name.indexOf('csv') < 0) {
             app.readJson(file, e);
           } else if (app.isGeocodage != 'none') {
-            app.csvToApi(e.target.result, app.dropFiles[0].name);
+            app.csvToApi(e.target.result, file.name);
           } else {
-            app.csvToJsonPoints(app.dropFiles[0].name, Papa.parse(e.target.result).data);
+            app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }
         });
       }
+      this.dropFiles = [];
     },
   },
 };
