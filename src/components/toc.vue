@@ -166,6 +166,10 @@ export default {
     };
   },
   methods: {
+    /**
+     * Zoom to a given layer extent
+     * @param e - event
+     */         
     zoomToLayer(e) {
       let isBtn = e.target.type == "button" ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
@@ -177,6 +181,10 @@ export default {
         map.getView().fit(extent, map.getSize());
       }
     },
+    /**
+     * Display projection select list
+     * @param e - event
+     */      
     displayImportProjList(e) {      
       if (e && this.displayImportProj) {
         document.getElementById('srsForm').style.display = e.target && e.target.checked ? '' : 'none';
@@ -184,7 +192,12 @@ export default {
         document.getElementById('geocodCheckbox').checked = false;
         document.getElementById('srsForm').style.display = 'none';
       }
-    },    
+    },
+    /**
+     * Display or hide geocode informations
+     * @param e - event
+     * @param msg - optionnal message to display into alert panel
+     */        
     displayGeocodPanel(e, msg) {
       if(e && this.isGeocodage) {
         this.isGeocodage = e.target && e.target.checked ? '' : 'none';
@@ -194,13 +207,20 @@ export default {
       }
       if(msg) {
         alert(msg);
-      }
-      
+      }      
     },
+    /**
+     * Remove a given by id
+     * @param id - layer id
+     */       
     removeLayerById(id) {
       // remove layer
       this.$store.state.map.removeLayer(this.getLayerById(id));
     },
+    /**
+     * Return layer
+     * @param id - search layer id
+     */    
     getLayerById(id) {
       let findLayer;
       let layers = this.$store.state.map.getLayers().array_;      
@@ -211,6 +231,10 @@ export default {
       });
       return findLayer;
     },
+    /**
+     * Use to destroy layer and remove layer from TOC
+     * @param e - event
+     */
     destroyLayer(e) {
       let isBtn = e.target.type == "button" ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
@@ -219,6 +243,10 @@ export default {
       // remove li container
       e.target.closest("li").remove();
     },
+    /**
+     * Use to manage layer visibility and associate icon
+     * @param e - event
+     */
     displayLayer(e) {
       // get icon element
       let isBtn = e.target.type == "button" ? true : false;

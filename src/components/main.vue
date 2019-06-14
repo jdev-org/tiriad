@@ -3,7 +3,7 @@
   <div id="main" class="drop container-fluid p-0">
     <div id="content" class="row-fuild justify-content-center">
       <nav class="navbar fixed-top navbar-light p-1 col-12">
-        <autocomplete :zoom="zoomAdress"/>
+        <autocomplete :zoom="zoomAdress" :flashResult="showResultAnimation"/>
       </nav>
       <vuemap/>
       <div class="row-fluid col-12 p-0">
@@ -31,7 +31,10 @@ export default {
   },
   data() {
     return {
+      // search adress result's zoom level      
       zoomAdress: 12,
+      // animation or geopin
+      showResultAnimation: true
     };
   },
   method: { // pass methods here
