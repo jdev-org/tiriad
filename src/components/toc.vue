@@ -32,22 +32,25 @@
                   <button type="button" class="btn btn-sm py-0 px-2" @click="destroyLayer" :value="layer.getProperties().id">
                     <i class="fa fa-trash" activate="false"></i>
                   </button>
-                  <button type="button" class="btn btn-sm py-0 px-2" style="display:none;">
-                    <i class="fa fa-filter"></i>
-                  </button>
-                  <button
+                  <button type="button" class="btn btn-sm py-0 px-2" @click="zoomToLayer" :value="layer.getProperties().id">
+                    <i class="fas fa-glasses" activate="false"></i>
+                  </button>                  
+                  <!--div-- class="dropdown-menu dropdown-menu-right">
+                    <button class="dropdown-item" type="button">Infos</button>
+                    <button class="dropdown-item" type="button">Style</button>
+                    <button class="dropdown-item" type="button">Vue 3D</button>
+                    <button class="dropdown-item" type="button">Sélection</button>                    
+                    <button class="dropdown-item" type="button">Table attributaire</button>
+                  </!--div-->
+                  <p class="pl-2 m-0">{{layer.getProperties().name}}</p>                  
+                  <!--button
                     type="button"
                     class="btn btn-sm dropdown-toggle"
                     data-toggle="dropdown"
                     aria-haspopup="true"
-                    aria-expanded="false"
-                    style="display:none;"
-                  ></button><p class="pl-2 m-0">{{layer.getProperties().name}}</p>
-                  <div class="dropdown-menu dropdown-menu-right" style="display:none;">
-                    <button class="dropdown-item" type="button">Infos</button>
-                    <button class="dropdown-item" type="button">Style</button>
-                    <button class="dropdown-item" type="button">Interroger</button>
-                  </div>
+                    aria-expanded="false"                    
+                  ></button-->                  
+
                 </div>
               </li>
             </ul>
@@ -73,12 +76,31 @@
           aria-labelledby="headingTwo"
           data-parent="#accordion"
         >
-          <div class="card-body">
+          <div class="card-body overflow-auto">
             <!-- drop files -->
-            <p>
-              Pour un import CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="geocodage" id="geocodCheckbox" @change="displayGeocodPanel">
+              <label class="form-check-label" for="geocodCheckbox">
+                Localiser des adresses
+              </label>
+            </div>            
+            <p id="geocodText" :style="{display: isGeocodage}">
+              Pour localiser un fichier CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
               <i>nom, adresse, code_postal, ville</i>
             </p>
+            <div class="form-group">
+              <div class="form-check">
+                <input class="form-check-input" :checked= "checkboxChecked" type="checkbox"  id="importProjCheck" @change="displayImportProjList">
+                <label class="form-check-label" for="importProjCheck">
+                  Ce fichier est dans une projection différente
+                </label>
+              </div>               
+              <select :style="{display: displayImportProj}" class="form-control" id="srsForm" @input='setSelectedSrs'>                
+                <option>EPSG:3857</option>
+                <option>EPSG:4326</option>
+                <option>EPSG:2154</option>
+              </select>
+            </div>            
             <b-field>
               <b-upload v-model="dropFiles" multiple drag-drop @input="readUploadFile()">
                 <section class="section">
@@ -91,14 +113,6 @@
                 </section>
               </b-upload>
             </b-field>
-            <div class="form-group">
-              <label for="srsForm">Sélectionner une projection :</label>
-              <select class="form-control" id="srsForm" @input='setSelectedSrs'>
-                <option>EPSG:3857</option>
-                <option>EPSG:4326</option>
-                <option>EPSG:2154</option>
-              </select>
-            </div>
             <button
             onclick="window.open('https://adresse.data.gouv.fr/api')"
             data-toggle="tooltip" data-html="true" title="<em>Cliquer pour plus d'informations</em>"
@@ -115,9 +129,9 @@
 import axios from 'axios';
 import kebabCase from 'lodash';
 import Papa from 'papaparse';
-import GeoJSON from 'ol/format/GeoJSON.js';
-import VectorSource from 'ol/source/Vector.js';
-import VectorLayer from 'ol/layer/Vector.js';
+import GeoJSON from 'ol/format/GeoJSON';
+import VectorSource from 'ol/source/Vector';
+import VectorLayer from 'ol/layer/Vector';
 import createStyle from 'vuelayers/lib/ol-ext';
 import Style from 'ol/style/Style';
 import Circle from 'ol/style/Circle';
@@ -127,6 +141,7 @@ import Stroke from 'ol/style/Stroke';
 import Icon from 'ol/style/Icon';
 import Text from 'ol/style/Text';
 import { transform } from 'ol/proj';
+
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -141,12 +156,47 @@ export default {
       dropFiles: [],
       jsonLayerName: '',
       jsonFeatures: '',
-      uploadSrs: 'EPSG:4326',
+      uploadSrs: 'EPSG:3857',
       map: this.$store.state.map,
       layers: this.$store.state.tocLayers,
+      isGeocodage: 'none',
+      mapProjection: 'EPSG:3857',
+      displayImportProj: 'none',
+      checkboxChecked: false
     };
   },
   methods: {
+    zoomToLayer(e) {
+      let isBtn = e.target.type == "button" ? true : false;
+      let layerId = isBtn ? e.target.value : e.target.parentElement.value;
+      let map = this.$store.state.map;
+      // remove li container
+      if(layerId){
+        let src = this.getLayerById(layerId).getSource();
+        let extent = src.getExtent();
+        map.getView().fit(extent, map.getSize());
+      }
+    },
+    displayImportProjList(e) {      
+      if (e && this.displayImportProj) {
+        document.getElementById('srsForm').style.display = e.target && e.target.checked ? '' : 'none';
+      } else {
+        document.getElementById('geocodCheckbox').checked = false;
+        document.getElementById('srsForm').style.display = 'none';
+      }
+    },    
+    displayGeocodPanel(e, msg) {
+      if(e && this.isGeocodage) {
+        this.isGeocodage = e.target && e.target.checked ? '' : 'none';
+      } else {
+        document.getElementById('geocodCheckbox').checked = false;
+        this.isGeocodage = 'none';
+      }
+      if(msg) {
+        alert(msg);
+      }
+      
+    },
     removeLayerById(id) {
       // remove layer
       this.$store.state.map.removeLayer(this.getLayerById(id));
@@ -207,17 +257,18 @@ export default {
       reader.readAsText(blob);
     },
     /**
-     * Read csv to transform to geoJSON
+     * Transform csv as object to geojson
      */
-    csvToJsonPoints(fileName, crs, csvObject) {
+    csvToJsonPoints(fileName, csvObject, crs) {      
       const app = this;
+      fileName = fileName.replace('.csv', '');      
       // layer skeleton
       const geojsonLayer = {
         type: 'FeatureCollection',
         crs: {
           type: 'name',
           properties: {
-            name: crs, // ex: EPSG:4326
+            name: crs ? crs : this.uploadSrs, // ex: EPSG:4326
           },
         },
         features: [],
@@ -235,7 +286,32 @@ export default {
       // get columns name
       const colName = csvObject[0];
       csvObject.splice(0, 1);
-
+      // find coordinates fields
+      let x,y;
+      colName.forEach(function(col) {
+        switch (col.toLowerCase()) {
+          case 'x':
+            x = col;
+            break;
+          case 'lon':
+            x = col;
+            break; 
+          case 'longitude':
+            x = col;
+            break;
+          case 'y':
+            y = col;
+            break;        
+          case 'lat':
+            y = col;
+            break;                    
+          case 'latitude':
+            y = col;
+            break;             
+          default:
+            break;
+        }                    
+      });
       // parse attributes values
       csvObject.forEach((line, v) => {
         const properties = {};
@@ -243,23 +319,25 @@ export default {
           const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
         });
+        
         // clone feature skeleton
-        if (properties.longitude && properties.latitude) {
+        if (properties[x] != undefined && properties[y] != undefined) {
           const newFeature = JSON.parse(JSON.stringify(feature));
           // create new feature
           newFeature.properties = properties;
-          let x = properties.longitude.replace('.', ',');
-          x = parseFloat(properties.longitude);
-          let y = properties.latitude.replace('.', ',');
-          y = parseFloat(properties.latitude);
-          newFeature.geometry.coordinates.push(x);
-          newFeature.geometry.coordinates.push(y);
+          let pX = properties[x];
+          let pY = properties[y]
+          pX = pX ? pX.replace(',', '.') : '';
+          pY = pY ? pY.replace(',', '.') : '';
+          pX = parseFloat(pX);
+          pY = parseFloat(pY);                    
+          newFeature.geometry.coordinates.push(pX);
+          newFeature.geometry.coordinates.push(pY);
           // add feature to layer
           geojsonLayer.features.push(newFeature);
         }
       });
-      const srs = geojsonLayer.crs.properties.name ? geojsonLayer.crs.properties.name : '';
-      this.displayJson(geojsonLayer, srs, fileName);
+      this.displayJson(geojsonLayer, geojsonLayer.crs.properties.name, fileName);
     },
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
@@ -281,16 +359,17 @@ export default {
         .then((text) => {
           const csvParsed = Papa.parse(text);
           fileName = fileName.replace('.csv', '');
-          app.csvToJsonPoints(fileName, 'EPSG:4326', csvParsed.data);
+          app.csvToJsonPoints(fileName, csvParsed.data, 'EPSG:4326');
         });
     },
     /**
      * Reproject features array
      */
     reprojectFeatures(featuresArray, srs) {
+      let app = this;
       const reprojFeatures = [];
       featuresArray.forEach((f) => {
-        f.getGeometry().transform(srs, 'EPSG:3857');
+        f.getGeometry().transform(srs, this.mapProjection);
         reprojFeatures.push(f);
       });
       return reprojFeatures;
@@ -298,14 +377,15 @@ export default {
     /**
      * From json object, reproject features and add them to map as vector layer
      */
-    displayJson(geojsonObject, srs, layerName) {
+    displayJson(geojsonObject, srs, layerName) {      
       let app = this;
       let features = (new GeoJSON()).readFeatures(geojsonObject);
       // reproject features
+      let standardSrs = this.mapProjection != this.uploadSrs ? this.uploadSrs : this.mapProjection;
       if (srs) {
         features = this.reprojectFeatures(features, srs);
-      } else {
-        features = this.reprojectFeatures(features, this.uploadSrs);
+      } else if(this.uploadSrs != this.mapProjection){
+        features = this.reprojectFeatures(features, standardSrs);
       }
       // create new vector and source
       const vectorSource = new VectorSource({
@@ -339,7 +419,8 @@ export default {
         content = JSON.stringify(e.target.result);
         const v = JSON.parse(content);
         jsonFeatures = JSON.parse(v);
-        this.displayJson(jsonFeatures,'', name);
+        this.displayJson(jsonFeatures,this.uploadSrs, name);
+        this.displayGeocodPanel(false, "Le fichier n'est pas au format CSV, il n'a pas été géocodé.");
       }
     },
     /**
@@ -356,8 +437,10 @@ export default {
         this.readFile(file, (e) => {
           if (file.name.indexOf('csv') < 0) {
             app.readJson(file, e);
-          } else {
+          } else if (app.isGeocodage != 'none') {
             app.csvToApi(e.target.result, app.dropFiles[0].name);
+          } else {
+            app.csvToJsonPoints(app.dropFiles[0].name, Papa.parse(e.target.result).data);
           }
         });
       }
