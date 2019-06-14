@@ -9,7 +9,7 @@
       <div class="row-fluid col-12 p-0">
         <toc/>
       </div>
-      <!--logo/-->
+      <logo/>>
     </div>
   </div>
 </template>
