@@ -36,6 +36,10 @@ import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 import { transform } from 'ol/proj';
+import Circle from 'ol/style/Circle';
+import Stroke from 'ol/style/Stroke';
+import { easeOut } from 'ol/easing';
+import Observable from 'ol/Observable';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -46,6 +50,7 @@ export default {
   name: 'autocomplete',
   props: {
     zoom: Number,
+    flashResult: Boolean
   },
   data() {
     return {
@@ -59,6 +64,38 @@ export default {
     };
   },
   methods: {
+    flash(map, feature, source) {
+      let app = this;
+      let duration = 3000;
+      let start = new Date().getTime();
+      function animate(event) {
+        let vectorContext = event.vectorContext;
+        let frameState = event.frameState;
+        let flashGeom = feature.getGeometry().clone();
+        let elapsed = frameState.time - start;
+        let elapsedRatio = elapsed / duration;
+        // radius will be 5 at start and 30 at end.
+        let radius = easeOut(elapsedRatio) * 25;
+        let opacity = easeOut(1 - elapsedRatio);
+
+        let flashStyle = new Style({
+            image: new Circle({
+                radius: radius,
+                snapToPixel: false,
+                stroke: new Stroke({
+                    color: 'rgba(255, 0, 0, ' + opacity + ')',
+                    width: 3,
+                    opacity: opacity
+                })
+            })
+        });
+        vectorContext.setStyle(flashStyle);
+        vectorContext.drawGeometry(flashGeom);
+        // tell OL to continue postcompose animation
+        map.render();
+      }
+      map.on('postcompose', animate);      
+    },
     /**
      * Remove all layer's features
      */
@@ -93,6 +130,7 @@ export default {
      * @param selected is the selected adress from list
      */
     displayResult(selected) {
+      let map = this.$store.state.map;
       if (selected.geometry) {
         const xy = selected.geometry.coordinates;
 
@@ -111,13 +149,18 @@ export default {
           this.createLayer();
         }
         this.layer.getSource().clear();
-        this.layer.getSource().addFeature(newFeature);
-        this.layer.getSource().refresh();
+
+        if(this.flashResult){
+          this.flash(map,newFeature,this.layer.getSource());
+        } else {
+          this.layer.getSource().addFeature(newFeature);
+          this.layer.getSource().refresh();
+          this.isDisplay = '';
+        }         
 
         // chnage view
-        this.$store.state.map.getView().setZoom(this.zoom);
-        this.$store.state.map.getView().setCenter(transform(xy, 'EPSG:4326', 'EPSG:3857'));
-        this.isDisplay = '';
+        map.getView().setZoom(this.zoom);
+        map.getView().setCenter(transform(xy, 'EPSG:4326', 'EPSG:3857'));        
       }
     },
     /**
