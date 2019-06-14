@@ -178,8 +178,12 @@ export default {
     };
   },
   methods: {
-    showOverlay(e, popup) {
-      
+    /**
+     * Overlay content elements
+     * @param e - event
+     * @param popup - ol.overlay object
+     */
+    showOverlay(e, popup) {      
       $(popup.getElement()).popover("dispose");         
       // get properties
       if(e.selected[0].getProperties().features){
@@ -215,6 +219,9 @@ export default {
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
       }
     },
+    /**
+     * Start geolocation trackink
+     */
     initGeoloc() {
       let app = this;
       let geolocation = new Geolocation({
@@ -226,7 +233,10 @@ export default {
         app.geolocCoordinates.y = p[0];        
       });
     },
-    // return overlay
+    /**
+     * Create ol.overlay and set overlay behavior
+     * @return ol.overlay object as Bootstrap popover
+     */
     createOverlay() {
       let app = this;
       // popup content
@@ -253,6 +263,10 @@ export default {
       });
       return popup;
     },
+    /**
+     * Add click interraction to display infos into overlay popover
+     * @param popup - ol.overlay
+     */
     addSelectInterraction(popup) {
       // close popup
       popup.setPosition(undefined);
