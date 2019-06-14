@@ -1,6 +1,18 @@
 <!-- eslint-disable -->
 <template>
   <div class="vuemap">
+    <!-- Popup content-->
+    <div id="popover-content" class="card" style="display:none;">
+      <div id="popover-title" class="card-header">
+        Featured
+      </div>
+      <div id="popover-text" class="card-body">
+        <h5 class="card-title">Special title treatment</h5>
+        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+      </div>
+    </div>  
+    <!-- Popup container-->
+    <popup class="p-0" id="popup"/> 
     <vl-map
       ref="map"
       :load-tiles-while-animating="true"
@@ -88,13 +100,19 @@ import Circle from 'ol/style/Circle';
 import Fill from 'ol/style/Fill';
 import Icon from 'ol/style/Icon';
 import Stroke from 'ol/style/Stroke';
-import GeoJSON from 'ol/format/GeoJSON.js';
-import fromLonLat from 'ol/proj.js';
+import GeoJSON from 'ol/format/GeoJSON';
+import fromLonLat from 'ol/proj';
 import axios from 'axios';
 import kebabCase from 'lodash';
 import Cluster from 'ol/source/Cluster'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
+import { click } from 'ol/events/condition';
+import Select from 'ol/interaction/Select';
+import Overlay from 'ol/Overlay';
+import popup from './popup';
+import Geolocation from 'ol/Geolocation';
+import { transform } from 'ol/proj';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -103,6 +121,9 @@ $(document).ready(() => {
 
 export default {
   name: 'vuemap',
+  components: {
+    popup
+  },
   data() {
     return {
       visible: true,
@@ -152,12 +173,101 @@ export default {
         cluster: true,
         distance: 50
       }],
+      geolocCoordinates:{},
+      popupCount: 0
     };
   },
-  props: {
-    msgTest: String,
-  },
   methods: {
+    showOverlay(e, popup) {
+      popup.setPosition(e.mapBrowserEvent.coordinate);          
+      // get properties
+      if(e.selected[0].getProperties().features){
+        app.popupCount = e.selected[0].getProperties().features.length;
+        // update app geolocation
+        let props = e.selected[0].getProperties().features[0].getProperties();
+        // trace way with Google maps
+        let encodePlace = encodeURIComponent(props.Adresse +'+'+ props.Code_Postal +'+'+ props.Ville);
+        
+        let textContent = "";
+        // title
+        let nom = props.Nom ? props.Nom : props.name;
+        document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">'+ nom +'</h6>';
+        // text content
+        let cat = props.Code_Categorie ? props.Code_Categorie : '';
+        textContent = cat ? textContent + '<p><strong>Catégorie: </strong>' + cat  : textContent;
+        let addr = props.Adresse ? props.Adresse : '';
+        textContent = cat ? textContent + '<br><strong>Adresse: </strong>' + addr : textContent;
+        let cp = props.Code_Postal ? props.Code_Postal : '';
+        textContent = cat ? textContent + '<br><strong>Code postal: </strong>' + cp : textContent;
+        // open place with google map
+        let gMapUrl;
+        if(app.geolocCoordinates && Object.keys(app.geolocCoordinates).length > 0){
+          gMapUrl =  'https://www.google.fr/maps/dir/' + encodePlace + '/' + app.geolocCoordinates.x + ',' + app.geolocCoordinates.y;
+          textContent += '<br><a style="float:right;" href="'+ gMapUrl +'"></a>';
+        } else {
+          gMapUrl =  'https://www.google.fr/maps/place/' + encodePlace;          
+        }        
+        textContent += '<br><a target="_blank" style="float:left; padding-bottom: 2px;" href="'+ gMapUrl +'">Voir dans Google maps</a></p>'
+        document.getElementById('popover-text').innerHTML = textContent;
+        // add content to popup        
+        document.getElementById('popup-content').innerHTML = $('#popover-content').html();
+      }
+    },
+    initGeoloc() {
+      let app = this;
+      let geolocation = new Geolocation({
+        tracking: true
+      });
+      geolocation.on('change:position', function() {
+        let p = geolocation.getPosition();
+        app.geolocCoordinates.x = p[1];
+        app.geolocCoordinates.y = p[0];        
+      });
+    },
+    // return overlay
+    createOverlay() {
+      let app = this;
+      // popup content
+      let popup = new Overlay({
+        element: document.getElementById('popup'),
+        autoPan: true,
+        autoPanAnimation: {
+          duration: 250
+        }
+      });
+      //let popup = new Overlay.popup;
+      this.$store.state.map.addOverlay(popup);
+      // event to hide popup
+      this.$store.state.map.on('click', function(evt) {
+        let f = app.$store.state.map.forEachFeatureAtPixel(
+            evt.pixel,
+            function(ft, layer){
+              return ft;
+            }
+        );
+        if (!f) {
+          popup.setPosition(undefined); 
+        }
+      });
+      return popup;
+    },
+    addSelectInterraction(popup) {
+      // close popup
+      popup.setPosition(undefined);
+      // select interaction working on "click"
+      let element = popup.getElement();
+      let app = this;
+      let selectClick = new Select({
+        condition: click
+      });
+      selectClick.on('select', function(e) {
+        if(e.selected && e.selected.length > 0 && e.mapBrowserEvent.coordinate.length > 0){
+          // set popup location
+          app.showOverlay(e, popup);            
+        }
+      });
+      this.$store.state.map.addInteraction(selectClick);          
+    },    
     /**
      * Manage TOC visibility
      */
@@ -368,8 +478,10 @@ export default {
       const app = this;
       // get map from vue instance
       const map = this.getMap();
+      // start tracking
+      this.initGeoloc();
 
-      if (map) {        
+      if (map) {
         // set map to global store
         this.setMap(map);
         // set default view context
@@ -386,13 +498,15 @@ export default {
         // event to update TOC content and display new layers layers
         map.getLayers().on('add', function(e) {
           app.$store.commit('setLayerToToc', e.element)
-          console.log(e.element);
         });
 
         this.firstLayer.forEach(function(p) {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
         });
+        let popupInfo = this.createOverlay();
+        this.addSelectInterraction(popupInfo);
+
       }
     },
     /**

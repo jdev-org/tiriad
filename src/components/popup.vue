@@ -13,6 +13,9 @@ export default {
 }
 </script>
     <style>
+      #popup-content{
+        font-size: 14px;
+      }
       .ol-popup {
         position: absolute;
         background-color: white;
