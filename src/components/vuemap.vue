@@ -179,9 +179,11 @@ export default {
   },
   methods: {
     showOverlay(e, popup) {
-      popup.setPosition(e.mapBrowserEvent.coordinate);          
+      
+      $(popup.getElement()).popover("dispose");         
       // get properties
       if(e.selected[0].getProperties().features){
+        popup.setPosition(e.mapBrowserEvent.coordinate);
         app.popupCount = e.selected[0].getProperties().features.length;
         // update app geolocation
         let props = e.selected[0].getProperties().features[0].getProperties();
