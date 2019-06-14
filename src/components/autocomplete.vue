@@ -64,6 +64,12 @@ export default {
     };
   },
   methods: {
+    /**
+     * Animation to display search adress result
+     * @param map - ol.Map
+     * @param feature - ol.Feature from autocompletion selection
+     * @param source - ol.Source for result layer
+     */
     flash(map, feature, source) {
       let app = this;
       let duration = 3000;
@@ -156,7 +162,7 @@ export default {
           this.layer.getSource().addFeature(newFeature);
           this.layer.getSource().refresh();
           this.isDisplay = '';
-        }         
+        }        
 
         // chnage view
         map.getView().setZoom(this.zoom);
