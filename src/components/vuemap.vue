@@ -6,7 +6,7 @@
       <div id="popover-title" class="card-header">
         Featured
       </div>
-      <div id="popover-text" class="card-body">
+      <div id="popover-text" class="card-body" style="padding-top: 10px;">
         <h5 class="card-title">Special title treatment</h5>
         <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
       </div>
@@ -187,6 +187,8 @@ export default {
       $(popup.getElement()).popover("dispose");         
       // get properties
       if(e.selected[0].getProperties().features){
+        let features = e.selected[0].getProperties().features;
+        let countFeatures = features.length;
         popup.setPosition(e.mapBrowserEvent.coordinate);
         app.popupCount = e.selected[0].getProperties().features.length;
         // update app geolocation
@@ -197,8 +199,10 @@ export default {
         let textContent = "";
         // title
         let nom = props.Nom ? props.Nom : props.name;
-        document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">'+ nom +'</h6>';
+        document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">' + nom + '</h6>';
         // text content
+        textContent = countFeatures > 1 ? textContent + '<em>('+ (countFeatures-1) + ' autres clients trouvés)</em>' : textContent;
+        textContent = textContent != '' ? textContent + '</n>': textContent;
         let cat = props.Code_Categorie ? props.Code_Categorie : '';
         textContent = cat ? textContent + '<p><strong>Catégorie: </strong>' + cat  : textContent;
         let addr = props.Adresse ? props.Adresse : '';
@@ -212,9 +216,12 @@ export default {
           textContent += '<br><a style="float:right;" href="'+ gMapUrl +'"></a>';
         } else {
           gMapUrl =  'https://www.google.fr/maps/place/' + encodePlace;          
-        }        
-        textContent += '<br><a target="_blank" style="float:left; padding-bottom: 2px;" href="'+ gMapUrl +'">Voir dans Google maps</a></p>'
-        document.getElementById('popover-text').innerHTML = textContent;
+        }
+        if(gMapUrl.indexOf("undefined") < 0){
+          textContent += '<br><a target="_blank" style="float:left; padding-bottom: 2px;" href="'+ gMapUrl +'">Voir dans Google maps</a></p>'
+        }
+        
+        document.getElementById('popover-text').innerHTML = textContent ? textContent : "<em>Aucune informations disponible.</em>";
         // add content to popup        
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
       }
