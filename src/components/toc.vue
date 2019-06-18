@@ -132,7 +132,7 @@ import Papa from 'papaparse';
 import GeoJSON from 'ol/format/GeoJSON';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import createStyle from 'vuelayers/lib/ol-ext';
+import { createStyle } from 'vuelayers/lib/ol-ext';
 import Style from 'ol/style/Style';
 import Circle from 'ol/style/Circle';
 import CircleStyle from 'ol/style.js';
@@ -141,7 +141,7 @@ import Stroke from 'ol/style/Stroke';
 import Icon from 'ol/style/Icon';
 import Text from 'ol/style/Text';
 import { transform } from 'ol/proj';
-
+import Cluster from 'ol/source/Cluster';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -166,6 +166,47 @@ export default {
     };
   },
   methods: {
+    createClientClusterStyle() {
+      let cache = {};
+      return function(feature){
+        const size = feature.get('features').length;
+        let style = cache[size];
+        const sizeRules = function (size) {
+          if (size === 1) {
+            return 10;
+          } if (size > 1 && size < 16) {
+            return 15;
+          } if (size > 15 && size < 31) {
+            return 20;
+          } if (size > 30 && size < 40) {
+            return 25;
+          }
+          return 30;
+        };  
+        
+        if (!style) {
+          if (size > 1) {
+            style = createStyle({
+              imageRadius: sizeRules(size), // default 10,
+              strokeColor: '#fff',
+              fillColor: 'rgba(234, 49, 8, 1)',
+              text: size.toString(),
+              textFillColor: '#fff',
+              opacity: 0.5,
+            });
+          } else {
+            style = new Style({
+              image: new Icon({
+                src: './img/star-orange-red-gmap.png',
+                scale: 0.4
+            }),
+          });
+          }
+          cache[size] = style;
+        }
+        return style;
+      }
+    },
     /**
      * Zoom to a given layer extent
      * @param e - event
@@ -256,8 +297,8 @@ export default {
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
       // remove layer
       this.removeLayerById(layerId);
-      // remove li container
-      e.target.closest("li").remove();
+      // remove directly layer into store. VueJs bind this action into toc and remove layer container automaticaly.
+      this.$store.commit("removeTocLayer",layerId);
     },
     /**
      * Use to manage layer visibility and associate icon
@@ -381,7 +422,8 @@ export default {
           geojsonLayer.features.push(newFeature);
         }
       });
-      this.displayJson(geojsonLayer, geojsonLayer.crs.properties.name, fileName);
+      fileName = fileName.replace(' ','');
+      this.displayJson(geojsonLayer, geojsonLayer.crs.properties.name, fileName, true);
     },
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
@@ -421,8 +463,9 @@ export default {
     /**
      * From json object, reproject features and add them to map as vector layer
      */
-    displayJson(geojsonObject, srs, layerName) {      
+    displayJson(geojsonObject, srs, layerName, isCsv) {
       let app = this;
+      // get features from geojson object
       let features = (new GeoJSON()).readFeatures(geojsonObject);
       // reproject features
       let standardSrs = this.mapProjection != this.uploadSrs ? this.uploadSrs : this.mapProjection;
@@ -430,17 +473,26 @@ export default {
         features = this.reprojectFeatures(features, srs);
       } else if(this.uploadSrs != this.mapProjection){
         features = this.reprojectFeatures(features, standardSrs);
-      }
+      }      
       // create new vector and source
-      const vectorSource = new VectorSource({
+      let vectorSource = new VectorSource({
         features
       });
+      // create clustered vector
+      if(isCsv){
+        vectorSource = new Cluster({
+          source: vectorSource,
+          distance: 50,
+        })
+      }      
       const vectorLayer = new VectorLayer({
         source: vectorSource,
         name: layerName,
         addToToc: true,
-        id: layerName
+        id: layerName,
+        style: app.createClientClusterStyle()
       });
+
       // remove layer if already exist
       let existLyr = this.getLayerByName(layerName);
       if(existLyr) {
@@ -450,6 +502,7 @@ export default {
       }
       // add to map
       this.$store.state.map.addLayer(vectorLayer);
+      let lenLayers =  app.$store.state.map.getLayers().array_.length;
     },
     /**
      * Search and remove layer by name
@@ -470,7 +523,7 @@ export default {
         content = JSON.stringify(e.target.result);
         const v = JSON.parse(content);
         jsonFeatures = JSON.parse(v);
-        this.displayJson(jsonFeatures,this.uploadSrs, name);
+        this.displayJson(jsonFeatures,this.uploadSrs, name, false);
         this.displayGeocodPanel(false, "Le fichier n'est pas au format CSV, il n'a pas été géocodé.");
       }
     },
