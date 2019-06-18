@@ -10,7 +10,8 @@ export const store = new Vuex.Store({
     vuelayers: [],
     zoomAdress: 11,
     displayToc: 'none',
-    tocLayers:[]
+    tocLayers:[],
+    style:{}
   },
   mutations: {
     /**
@@ -84,13 +85,21 @@ export const store = new Vuex.Store({
      * @param {Object} state 
      * @param {Array} layers from map
      */
-    updateToc(state, layers) {
+    clearToc(state) {
       state.tocLayers = [];
       // keep empty to clean toc
+      let layers = state.map.getLayers().array_;
       if(layers.length > 0){
         layers.forEach(function(layer) {
-          state.tocLayers.push(layer);
+          if(layer.type == "TILE" || (layer.getSource() && layer.getSource().getFeatures() && layer.getSource().getFeatures().length > 0)) {
+            state.tocLayers.unshift(layer);            
+          }
         });
+      }
+    },
+    setStyle(state,styleAsObj) {
+      if(styleAsObj && styleAsObj.name && styleAsObj.style && !state.style[styleAsObj.name]) {
+        state.style[styleAsObj.name] = styleAsObj.style;
       }
     }
   },
@@ -104,5 +113,6 @@ export const store = new Vuex.Store({
     getZoomAdress: state => state.zoomAdress,
     getDisplayToc: state => state.displayToc,
     getTocLayers: state => state.tocLayers,
+    getStyle: state => state.style
   },
 });

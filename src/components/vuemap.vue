@@ -79,7 +79,7 @@
       <button type="button" @click="displayToc" id="tocBtn" class="btn btn-sm btn-map" data-toggle="tooltip" data-html="true" title="<em>Gestion des couches</em>">
         <i class="fas fa-eye"></i>
       </button>
-      <button type="button" @click="overView" id="toolsManagerBtn" class="btn btn-sm btn-map" data-toggle="tooltip" data-html="true" title="Boîte à outils (à venir)</em>">
+      <button type="button" @click="overView" style="display:none" id="toolsManagerBtn" class="btn btn-sm btn-map" data-toggle="tooltip" data-html="true" title="Boîte à outils (à venir)</em>">
         <i class="fas fa-tools"></i>
       </button>
     </div>
@@ -191,38 +191,27 @@ export default {
         let countFeatures = features.length;
         popup.setPosition(e.mapBrowserEvent.coordinate);
         app.popupCount = e.selected[0].getProperties().features.length;
-        // update app geolocation
+        // display attributes into popup
         let props = e.selected[0].getProperties().features[0].getProperties();
-        // trace way with Google maps
-        let encodePlace = encodeURIComponent(props.Adresse +'+'+ props.Code_Postal +'+'+ props.Ville);
-        
+        // create popup content
         let textContent = "";
         // title
-        let nom = props.Nom ? props.Nom : props.name;
-        document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">' + nom + '</h6>';
-        // text content
-        textContent = countFeatures > 1 ? textContent + '<em>('+ (countFeatures-1) + ' autres clients trouvés)</em>' : textContent;
-        textContent = textContent != '' ? textContent + '</n>': textContent;
-        let cat = props.Code_Categorie ? props.Code_Categorie : '';
-        textContent = cat ? textContent + '<p><strong>Catégorie: </strong>' + cat  : textContent;
-        let addr = props.Adresse ? props.Adresse : '';
-        textContent = cat ? textContent + '<br><strong>Adresse: </strong>' + addr : textContent;
-        let cp = props.Code_Postal ? props.Code_Postal : '';
-        textContent = cat ? textContent + '<br><strong>Code postal: </strong>' + cp : textContent;
-        // open place with google map
-        let gMapUrl;
-        if(app.geolocCoordinates && Object.keys(app.geolocCoordinates).length > 0){
-          gMapUrl =  'https://www.google.fr/maps/dir/' + encodePlace + '/' + app.geolocCoordinates.x + ',' + app.geolocCoordinates.y;
-          textContent += '<br><a style="float:right;" href="'+ gMapUrl +'"></a>';
+        if(countFeatures > 1) {
+          document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">Informations (' + countFeatures + ' résultats)</h6>';  
         } else {
-          gMapUrl =  'https://www.google.fr/maps/place/' + encodePlace;          
+          document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">Informations</h6>';
         }
-        if(gMapUrl.indexOf("undefined") < 0){
-          textContent += '<br><a target="_blank" style="float:left; padding-bottom: 2px;" href="'+ gMapUrl +'">Voir dans Google maps</a></p>'
-        }
-        
+
+        textContent = countFeatures > 1 ? textContent + '<em>('+ (countFeatures-1) + ' autres clients trouvés)</em>' : textContent;
+        Object.keys(props).forEach(function(propName) {
+          if(typeof(props[propName]) != "object" && propName.indexOf('result') <0 && propName != 'latitude' && propName != 'longitude') {
+            textContent = textContent != '' ? textContent + '</br>': textContent;
+            textContent = textContent +'<strong>'+ propName +': </strong>' + props[propName];
+          }
+        });        
+        // set content text to html template for this component
         document.getElementById('popover-text').innerHTML = textContent ? textContent : "<em>Aucune informations disponible.</em>";
-        // add content to popup        
+        // add content to popup import by popup content
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
       }
     },
@@ -483,7 +472,7 @@ export default {
         source: source
       });
       if(params.style){        
-        layer.setStyle(params.style)
+        layer.setStyle(params.style)        
       }
       let name = params.name ? params.name : '';
       let id = params.id ? params.id : '';
@@ -502,8 +491,7 @@ export default {
       // get map from vue instance
       const map = this.getMap();
       // start tracking
-      this.initGeoloc();
-
+      //this.initGeoloc();
       if (map) {
         // set map to global store
         this.setMap(map);
@@ -519,17 +507,16 @@ export default {
         });
         map.getControls().extend([this.controls.overView]);
         // event to update TOC content and display new layers layers
-        map.getLayers().on('add', function(e) {
-          app.$store.commit('setLayerToToc', e.element)
-        });
-
+        map.getLayers().on('add', function(e) {          
+          app.$store.commit('setLayerToToc', e.element);
+        });          
         this.firstLayer.forEach(function(p) {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
         });
+        this.$store.commit('clearToc');    
         let popupInfo = this.createOverlay();
         this.addSelectInterraction(popupInfo);
-
       }
     },
     /**
