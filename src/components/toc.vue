@@ -177,8 +177,14 @@ export default {
       // remove li container
       if(layerId){
         let src = this.getLayerById(layerId).getSource();
-        let extent = src.getExtent();
-        map.getView().fit(extent, map.getSize());
+        if(src && src.getExtent){
+          let extent = src.getExtent();
+          map.getView().fit(extent, map.getSize());
+        } else {
+          // TODO : create v-if when button is create to hide zoom to layer action if not available.
+          alert("Cette action n'est pas disponible pour cet élément.");
+        }
+        
       }
     },
     /**
@@ -389,7 +395,7 @@ export default {
         new Blob([csvString], { type: 'text/csv; charset=urf-8' }),
         'upload.csv',
       );
-      fetch('http://api-adresse.data.gouv.fr/search/csv/', {
+      fetch('https://api-adresse.data.gouv.fr/search/csv/', {
         method: 'POST',
         body: requestBody,
       })
