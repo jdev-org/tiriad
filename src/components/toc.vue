@@ -406,7 +406,7 @@ export default {
         });
         
         // clone feature skeleton
-        if (properties[x] != undefined && properties[y] != undefined) {
+        if (properties[x] && properties[y] && properties[x] != undefined && properties[y] != undefined) {
           const newFeature = JSON.parse(JSON.stringify(feature));
           // create new feature
           newFeature.properties = properties;
