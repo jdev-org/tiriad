@@ -32,7 +32,7 @@ export default {
   data() {
     return {
       // search adress result's zoom level      
-      zoomAdress: 12,
+      zoomAdress: 11,
       // animation or geopin
       showResultAnimation: true
     };
