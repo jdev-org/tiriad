@@ -361,7 +361,7 @@ export default {
         body: requestBody,
       }).then(res => res.text()).then((text) => {
           // TODO
-        });
+        }));
     },
     /**
      * Transform csv as object to geojson
