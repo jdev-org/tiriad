@@ -346,6 +346,24 @@ export default {
       reader.readAsText(blob);
     },
     /**
+    * save file
+    */
+    saveFile(features, filename){
+      
+      var writer = new ol.format.GeoJSON();
+      var geojsonStr = writer.writeFeatures(features);
+      
+      const requestBody = new FormData();
+      requestBody.append('filename', filename);
+      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=urf-8' }),'filename.geojson');    
+      fetch('/data.php', {
+        method: 'POST',
+        body: requestBody,
+      }).then(res => res.text()).then((text) => {
+          // TODO
+        });
+    },
+    /**
      * Transform csv as object to geojson
      */
     csvToJsonPoints(fileName, csvObject, crs) {      
@@ -427,6 +445,8 @@ export default {
         }
       });
       fileName = fileName.replace(' ','');
+      //save file to server
+      saveFile(geojsonLayer.features, fileName);
       this.displayJson(geojsonLayer, geojsonLayer.crs.properties.name, fileName, true);
     },
     /**
