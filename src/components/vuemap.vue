@@ -202,7 +202,6 @@ export default {
           document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">Informations</h6>';
         }
 
-        textContent = countFeatures > 1 ? textContent + '<em>('+ (countFeatures-1) + ' autres clients trouvés)</em>' : textContent;
         Object.keys(props).forEach(function(propName) {
           if(typeof(props[propName]) != "object" && propName.indexOf('result') <0 && propName != 'latitude' && propName != 'longitude') {
             textContent = textContent != '' ? textContent + '</br>': textContent;
