@@ -514,7 +514,6 @@ export default {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
         });
-        this.$store.commit('clearToc');    
         let popupInfo = this.createOverlay();
         this.addSelectInterraction(popupInfo);
       }
