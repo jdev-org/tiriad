@@ -349,9 +349,8 @@ export default {
     * save file
     */
     saveFile(features, filename){
-      
-      var writer = new ol.format.GeoJSON();
-      var geojsonStr = writer.writeFeatures(features);
+     
+      var geojsonStr = GeoJSON.writeFeatures(features);
       
       const requestBody = new FormData();
       requestBody.append('filename', filename);
