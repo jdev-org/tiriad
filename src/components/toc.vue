@@ -446,7 +446,7 @@ export default {
       });
       fileName = fileName.replace(' ','');
       //save file to server
-      saveFile(geojsonLayer.features, fileName);
+      this.saveFile(geojsonLayer.features, fileName);
       this.displayJson(geojsonLayer, geojsonLayer.crs.properties.name, fileName, true);
     },
     /**
