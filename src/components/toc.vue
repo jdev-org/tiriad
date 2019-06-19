@@ -81,13 +81,9 @@
             <div class="form-check">
               <input class="form-check-input" type="checkbox" value="geocodage" id="geocodCheckbox" @change="displayGeocodPanel">
               <label class="form-check-label" for="geocodCheckbox">
-                Localiser des adresses
+                Localiser des coordonnées
               </label>
-            </div>            
-            <p id="geocodText" :style="{display: isGeocodage}">
-              Pour localiser un fichier CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
-              <i>nom, adresse, code_postal, ville</i>
-            </p>
+            </div>
             <div class="form-group">
               <div class="form-check">
                 <input class="form-check-input" :checked= "checkboxChecked" type="checkbox"  id="importProjCheck" @change="displayImportProjList">
@@ -100,7 +96,11 @@
                 <option>EPSG:4326</option>
                 <option>EPSG:2154</option>
               </select>
-            </div>            
+            </div>      
+            <p id="geocodText" :style="{display: isGeocodage}">
+              Pour localiser un fichier CSV, le fichier doit au moins contenir les colonnes suivantes : <br>
+              <i>Adresse (1), Code Postal, Ville</i>
+            </p>                  
             <b-field>
               <b-upload v-model="dropFiles" multiple drag-drop @input="readUploadFile()">
                 <section class="section">
@@ -159,7 +159,8 @@ export default {
       uploadSrs: 'EPSG:3857',
       map: this.$store.state.map,
       layers: this.$store.state.tocLayers,
-      isGeocodage: 'none',
+      isGeocodage: '',
+      geocodeData: true,
       mapProjection: 'EPSG:3857',
       displayImportProj: 'none',
       checkboxChecked: false
@@ -224,8 +225,7 @@ export default {
         } else {
           // TODO : create v-if when button is create to hide zoom to layer action if not available.
           alert("Cette action n'est pas disponible pour cet élément.");
-        }
-        
+        }        
       }
     },
     /**
@@ -246,11 +246,15 @@ export default {
      * @param msg - optionnal message to display into alert panel
      */        
     displayGeocodPanel(e, msg) {
-      if(e && this.isGeocodage) {
-        this.isGeocodage = e.target && e.target.checked ? '' : 'none';
+      if(e && this.isGeocodage === '') {
+        // do not geocode data
+        this.geocodeData = e.target && e.target.checked ? false : true;
+        this.isGeocodage = e.target && e.target.checked ? 'none' : '';
       } else {
+        // geocode data
         document.getElementById('geocodCheckbox').checked = false;
-        this.isGeocodage = 'none';
+        this.isGeocodage = '';
+        this.geocodeData = true;
       }
       if(msg) {
         alert(msg);
@@ -406,7 +410,7 @@ export default {
         });
         
         // clone feature skeleton
-        if (properties[x] && properties[y] && properties[x] != undefined && properties[y] != undefined) {
+        if (/*properties[x] && properties[y] && */properties[x] != undefined && properties[y] != undefined) {
           const newFeature = JSON.parse(JSON.stringify(feature));
           // create new feature
           newFeature.properties = properties;
@@ -437,6 +441,9 @@ export default {
         new Blob([csvString], { type: 'text/csv; charset=urf-8' }),
         'upload.csv',
       );
+      requestBody.append('columns', 'Adresse (1)');
+      requestBody.append('columns', 'Code Postal');
+      requestBody.append('columns', 'Ville');      
       fetch('https://api-adresse.data.gouv.fr/search/csv/', {
         method: 'POST',
         body: requestBody,
@@ -541,7 +548,7 @@ export default {
         this.readFile(file, (e) => {
           if (file.name.indexOf('csv') < 0) {
             app.readJson(file, e);
-          } else if (app.isGeocodage != 'none') {
+          } else if (app.geocodeData) {
             app.csvToApi(e.target.result, file.name);
           } else {
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
