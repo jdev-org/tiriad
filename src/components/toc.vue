@@ -362,7 +362,7 @@ export default {
           // TODO
           console.log(text);
       });*/
-      this.axios.post('./data.php',
+      axios.post('./data.php',
           formData,
           {
           headers: {
