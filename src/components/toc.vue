@@ -142,6 +142,7 @@ import Icon from 'ol/style/Icon';
 import Text from 'ol/style/Text';
 import { transform } from 'ol/proj';
 import Cluster from 'ol/source/Cluster';
+import KML from 'ol/format/KML';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -348,19 +349,19 @@ export default {
     /**
     * save file
     */
-    saveFile(features, filename){
-     
-      var geojsonStr = GeoJSON.writeFeatures(features);
-      
-      const requestBody = new FormData();
+    saveFile(geoJsonLayer, filename) {
+      let requestBody = new FormData();
+      let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
+      let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
       requestBody.append('filename', filename);
-      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=urf-8' }),'filename.geojson');    
+      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=urf-8' }),'filename.geojson');      
       fetch('/data.php', {
         method: 'POST',
         body: requestBody,
       }).then(res => res.text()).then((text) => {
           // TODO
-        });
+          console.log(text);
+      });
     },
     /**
      * Transform csv as object to geojson
@@ -445,7 +446,8 @@ export default {
       });
       fileName = fileName.replace(' ','');
       //save file to server
-      this.saveFile(geojsonLayer.features, fileName);
+      this.saveFile(geojsonLayer, fileName);
+      // display layer to map
       this.displayJson(geojsonLayer, geojsonLayer.crs.properties.name, fileName, true);
     },
     /**
@@ -493,6 +495,7 @@ export default {
       let app = this;
       // get features from geojson object
       let features = (new GeoJSON()).readFeatures(geojsonObject);
+      let save = (new GeoJSON()).writeFeatures(features);
       // reproject features
       let standardSrs = this.mapProjection != this.uploadSrs ? this.uploadSrs : this.mapProjection;
       if (srs) {
@@ -536,6 +539,48 @@ export default {
     removeLayer(layerName) {
       this.$store.commit('removeLayer', layerName);
     },
+    /**
+     * get adresse from coordinates
+     * @param features - {Array}
+     */
+    getAdresse(features) {    
+      let app = this;
+      let responses = [];
+      /* TODO - finish
+      features.forEach(function(feature) {
+        let coordinates = features[0].getGeometry().getCoordinates();
+        //feature.setProperty({'Adresse': app.getAdresseFromLonLat(coordinates)});
+        console.log(feature.getProperties());       
+        responses.push(app.getAdresseFromLonLat(coordinates));
+      })*/
+    },
+    /**
+     * reverse geocoding from point to adresse
+     * @param lonLat - Object {lon, lat}
+     */
+    getAdresseFromLonLat(lonLat) {
+      // call API to get adresse from lonLat
+      const app = this;
+      axios.get('https://api-adresse.data.gouv.fr/reverse/?lon='+lonLat[0]+'&lat='+lonLat[1])
+      .then(response => (
+        console.log(response)
+      )).then(response => (console.log(response)));
+    },
+    /**
+     * Read kml file
+     */
+    readKml(file, e) {
+      // file name
+      const rg = new RegExp('[^.]+');
+      const name = file.name.match(rg)[0];
+      let content = '';
+      let kmlFeatures = '';
+      this.removeLayer(name);
+      let kmlString = e.target.result;
+      let features = new KML().readFeatures(kmlString);
+      this.getAdresse(features);
+      console.log(features);
+    },    
     /*
      * read json file
      */
@@ -565,18 +610,25 @@ export default {
         // fire read file
         const file = this.dropFiles[this.dropFiles.length - 1];
         this.readFile(file, (e) => {
-          if (file.name.indexOf('csv') < 0) {
+          if (file.name.indexOf('json') > -1) {
+            // read json
             app.readJson(file, e);
+          } else if (file.name.indexOf('kml') > -1) {
+            // read kml
+            console.log("I read KML file");
+            app.readKml(file,e);
           } else if (app.geocodeData) {
+            // read csv to geocode
             app.csvToApi(e.target.result, file.name);
           } else {
+            // read georeferenced csv
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }
         });
       }
       this.dropFiles = [];
-    },
-  },
+    }
+  }
 };
 </script>
 
