@@ -355,13 +355,26 @@ export default {
       let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
       requestBody.append('filename', filename);
       requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=urf-8' }),'filename.geojson');      
-      fetch('./data.php', {
+      /*fetch('./data.php', {
         method: 'POST',
         body: requestBody,
       }).then(res => res.text()).then((text) => {
           // TODO
           console.log(text);
-      });
+      });*/
+      this.axios.post('./data.php',
+          formData,
+          {
+          headers: {
+              'Content-Type': 'multipart/form-data'
+          }
+        }
+      ).then(function(data){
+        console.log(data.data);
+      })
+      .catch(function(){
+        console.log('FAILURE!!');
+      });      
     },
     /**
      * Transform csv as object to geojson
