@@ -363,7 +363,7 @@ export default {
           console.log(text);
       });*/
       axios.post('./data.php',
-          formData,
+          requestBody,
           {
           headers: {
               'Content-Type': 'multipart/form-data'
