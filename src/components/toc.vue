@@ -354,7 +354,7 @@ export default {
       let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
       let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
       requestBody.append('filename', filename);
-      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=urf-8' }),'filename.geojson');      
+      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }),'filename.geojson');      
       /*fetch('./data.php', {
         method: 'POST',
         body: requestBody,
@@ -472,7 +472,7 @@ export default {
       requestBody.append('delimiter', ';');
       requestBody.append(
         'data',
-        new Blob([csvString], { type: 'text/csv; charset=urf-8' }),
+        new Blob([csvString], { type: 'text/csv; charset=utf-8' }),
         'upload.csv',
       );
       requestBody.append('columns', 'Adresse (1)');
