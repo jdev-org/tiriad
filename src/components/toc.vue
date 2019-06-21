@@ -354,14 +354,8 @@ export default {
       let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
       let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
       requestBody.append('filename', filename);
-      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }),'filename.geojson');      
-      /*fetch('./data.php', {
-        method: 'POST',
-        body: requestBody,
-      }).then(res => res.text()).then((text) => {
-          // TODO
-          console.log(text);
-      });*/
+      requestBody.append('content',geojsonStr);
+      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }),'filename.geojson');
       axios.post('./data.php',
           requestBody,
           {

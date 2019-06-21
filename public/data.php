@@ -1,11 +1,12 @@
 <?php
 // get filename
 $fichier=$_POST['filename'];
+$geojsonStr=$_POST['geojsonContent'];
 $destFolder="/tmp";
 // get filecontent
 $geojson = file_get_contents('php://input');
 //save to disk
-file_put_contents($destFolder . DIRECTORY_SEPARATOR .$fichier, $geojson);
+file_put_contents($destFolder . DIRECTORY_SEPARATOR .$fichier, $geojsonStr);
 header('Content-type: application/json',true);
-echo '{"content":"'.$geojson.'", success":true, "filepath":"'.$fichier.'"}';
+echo '{"success":true, "filepath":"'.$fichier.'", "geojsonString":'.$geojsonStr.'}';
 ?>
