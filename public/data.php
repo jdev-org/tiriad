@@ -1,7 +1,7 @@
 <?php
 // get filename
 $fichier=$_POST['filename'];
-$geojsonStr=$_POST['geojsonContent'];
+$geojsonStr=$_POST['content'];
 $destFolder="/tmp";
 // get filecontent
 $geojson = file_get_contents('php://input');
