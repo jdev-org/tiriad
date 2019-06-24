@@ -34,7 +34,7 @@ export default {
       // search adress result's zoom level      
       zoomAdress: 11,
       // animation or geopin
-      showResultAnimation: true
+      showResultAnimation: false
     };
   },
   method: { // pass methods here
