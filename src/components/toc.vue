@@ -382,7 +382,7 @@ export default {
       requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }));
       let request = new XMLHttpRequest();
       request.open("POST", "./data.php");
-      request.send(formData);      
+      request.send(requestBody);
     },
     /**
      * Transform csv as object to geojson
