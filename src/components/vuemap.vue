@@ -104,8 +104,6 @@ import kebabCase from 'lodash';
 import Cluster from 'ol/source/Cluster'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
-import { click } from 'ol/events/condition';
-import Select from 'ol/interaction/Select';
 import Overlay from 'ol/Overlay';
 import popup from './popup';
 import Geolocation from 'ol/Geolocation';
@@ -159,7 +157,7 @@ export default {
         visible: true,
         style: this.createDistribClusterStyle(),
         cluster: true,
-        distance: 50        
+        distance: 20
       },{
         id: this.getRandomId(),
         name: 'Clients',
@@ -168,7 +166,7 @@ export default {
         visible: true,
         style: this.createClientClusterStyle(),
         cluster: true,
-        distance: 50
+        distance: 20
       }],
       geolocCoordinates:{},
       popupCount: 0
@@ -180,7 +178,7 @@ export default {
      * @param e - event
      * @param popup - ol.overlay object
      */
-    showOverlay(e, popup) {  
+    showOverlay(selectFeature, popup) {  
       $(popup.getElement()).popover("dispose");   
       let app = this;
       // control text to add into popover
@@ -200,13 +198,17 @@ export default {
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
       };
       // get properties
-      if(e.selected[0].getProperties().features){
-        let features = e.selected[0].getProperties().features;
+      if(selectFeature.getProperties().features){
+        let features = selectFeature.getProperties().features;
         let countFeatures = features.length;
-        popup.setPosition(e.mapBrowserEvent.coordinate);
-        app.popupCount = e.selected[0].getProperties().features.length;
+        
+        app.popupCount = selectFeature.getProperties().features.length;
         // display attributes into popup
-        let feature = e.selected[0].getProperties().features[0];
+        // only for the first feature
+        let feature = selectFeature.getProperties().features[0];
+        let position = feature.getGeometry().getCoordinates();
+        // locate popover
+        popup.setPosition(position);
         let props = feature.getProperties();
         // create popup content
         let textContent = "";
@@ -223,9 +225,9 @@ export default {
         });
         // check if adress exit in popover content
         if(textContent.indexOf("Adresse") < 0) {
-          let coordinates = feature.getGeometry().getCoordinates();
+          //let coordinates = feature.getGeometry().getCoordinates();
           // clone object to transform cooridnates
-          coordinates = JSON.parse(JSON.stringify(coordinates));
+          let coordinates = JSON.parse(JSON.stringify(position));
           // reproject coordinates for the ban API
           let newCoord = transform([coordinates[0], coordinates[1]], 'EPSG:3857', 'EPSG:4326');
           // create request
@@ -278,25 +280,13 @@ export default {
       // popup content
       let popup = new Overlay({
         element: document.getElementById('popup'),
+        id: 'popover',
         autoPan: true,
         autoPanAnimation: {
           duration: 250
         }
       });
-      //let popup = new Overlay.popup;
       this.$store.state.map.addOverlay(popup);
-      // event to hide popup
-      this.$store.state.map.on('click', function(evt) {
-        let f = app.$store.state.map.forEachFeatureAtPixel(
-            evt.pixel,
-            function(ft, layer){
-              return ft;
-            }
-        );
-        if (!f) {
-          popup.setPosition(undefined); 
-        }
-      });
       return popup;
     },
     /**
@@ -309,16 +299,18 @@ export default {
       // select interaction working on "click"
       let element = popup.getElement();
       let app = this;
-      let selectClick = new Select({
-        condition: click
-      });
-      selectClick.on('select', function(e) {
-        if(e.selected && e.selected.length > 0 && e.mapBrowserEvent.coordinate.length > 0){
-          // set popup location
-          app.showOverlay(e, popup);            
-        }
-      });
-      this.$store.state.map.addInteraction(selectClick);          
+      
+      // event to hide or show popover
+      this.$store.state.map.on('click', function(evt) {
+        popup.setPosition(undefined);
+        let f = app.$store.state.map.forEachFeatureAtPixel(
+            evt.pixel,
+            function(ft, layer){
+              app.showOverlay(ft, popup);
+              return ft;
+            }
+        );
+      });      
     },    
     /**
      * Manage TOC visibility
