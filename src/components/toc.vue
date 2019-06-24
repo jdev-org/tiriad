@@ -164,7 +164,8 @@ export default {
       geocodeData: true,
       mapProjection: 'EPSG:3857',
       displayImportProj: 'none',
-      checkboxChecked: false
+      checkboxChecked: false,
+      banReverseResult: ""
     };
   },
   methods: {
@@ -547,33 +548,6 @@ export default {
       this.$store.commit('removeLayer', layerName);
     },
     /**
-     * get adresse from coordinates
-     * @param features - {Array}
-     */
-    getAdresse(features) {    
-      let app = this;
-      let responses = [];
-      /* TODO - finish
-      features.forEach(function(feature) {
-        let coordinates = features[0].getGeometry().getCoordinates();
-        //feature.setProperty({'Adresse': app.getAdresseFromLonLat(coordinates)});
-        console.log(feature.getProperties());       
-        responses.push(app.getAdresseFromLonLat(coordinates));
-      })*/
-    },
-    /**
-     * reverse geocoding from point to adresse
-     * @param lonLat - Object {lon, lat}
-     */
-    getAdresseFromLonLat(lonLat) {
-      // call API to get adresse from lonLat
-      const app = this;
-      axios.get('https://api-adresse.data.gouv.fr/reverse/?lon='+lonLat[0]+'&lat='+lonLat[1])
-      .then(response => (
-        console.log(response)
-      )).then(response => (console.log(response)));
-    },
-    /**
      * Read kml file
      */
     readKml(file, e) {
@@ -585,8 +559,7 @@ export default {
       this.removeLayer(name);
       let kmlString = e.target.result;
       let features = new KML().readFeatures(kmlString);
-      this.getAdresse(features);
-      console.log(features);
+      // TODO : display features to the map
     },    
     /*
      * read json file
@@ -618,17 +591,12 @@ export default {
         const file = this.dropFiles[this.dropFiles.length - 1];
         this.readFile(file, (e) => {
           if (file.name.indexOf('json') > -1) {
-            // read json
             app.readJson(file, e);
           } else if (file.name.indexOf('kml') > -1) {
-            // read kml
-            console.log("I read KML file");
             app.readKml(file,e);
           } else if (app.geocodeData) {
-            // read csv to geocode
             app.csvToApi(e.target.result, file.name);
           } else {
-            // read georeferenced csv
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }
         });

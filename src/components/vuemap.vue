@@ -3,9 +3,6 @@
   <div class="vuemap">
     <!-- Popup content-->
     <div id="popover-content" class="card" style="display:none;">
-      <div id="popover-title" class="card-header">
-        Featured
-      </div>
       <div id="popover-text" class="card-body" style="padding-top: 10px;">
         <h5 class="card-title">Special title treatment</h5>
         <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
@@ -183,8 +180,25 @@ export default {
      * @param e - event
      * @param popup - ol.overlay object
      */
-    showOverlay(e, popup) {      
-      $(popup.getElement()).popover("dispose");         
+    showOverlay(e, popup) {  
+      $(popup.getElement()).popover("dispose");   
+      let app = this;
+      // control text to add into popover
+      let controlText = function(content, textToInsert) {
+        if(content.indexOf(textToInsert) < 0 && textToInsert != '') {
+          let jumpLine = content != '' ? '</br>' : '';
+          return jumpLine + textToInsert;
+        } else {
+          return '';
+        }
+      };
+      // add to popover
+      let addToPopover = function(textToDisplay) {
+        // set content text to html template for this component
+        document.getElementById('popover-text').innerHTML = textToDisplay ? textToDisplay : "<em>Aucune informations disponible.</em>";
+        // add content to popup import by popup content
+        document.getElementById('popup-content').innerHTML = $('#popover-content').html();
+      };
       // get properties
       if(e.selected[0].getProperties().features){
         let features = e.selected[0].getProperties().features;
@@ -192,28 +206,55 @@ export default {
         popup.setPosition(e.mapBrowserEvent.coordinate);
         app.popupCount = e.selected[0].getProperties().features.length;
         // display attributes into popup
-        let props = e.selected[0].getProperties().features[0].getProperties();
+        let feature = e.selected[0].getProperties().features[0];
+        let props = feature.getProperties();
         // create popup content
         let textContent = "";
-        // title
-        if(countFeatures > 1) {
-          document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">Informations (' + countFeatures + ' résultats)</h6>';  
-        } else {
-          document.getElementById('popover-title').innerHTML = '<h6 style="color:rgb(26,112,175)">Informations</h6>';
-        }
-
         Object.keys(props).forEach(function(propName) {
-          if(typeof(props[propName]) != "object" && propName.indexOf('result') <0 && propName != 'latitude' && propName != 'longitude') {
-            textContent = textContent != '' ? textContent + '</br>': textContent;
-            textContent = textContent +'<strong>'+ propName +': </strong>' + props[propName];
+          if(typeof(props[propName]) != "object" 
+          && propName.indexOf('result') < 0 
+          && propName != 'label'
+          && propName != 'latitude' 
+          && propName != 'longitude' 
+          && propName.indexOf('style') < 0 ) {            
+            let value = props[propName].toString();
+            textContent += controlText(textContent, '<strong>' + propName+ ': </strong>' + value.toLowerCase());
           }
-        });        
-        // set content text to html template for this component
-        document.getElementById('popover-text').innerHTML = textContent ? textContent : "<em>Aucune informations disponible.</em>";
-        // add content to popup import by popup content
-        document.getElementById('popup-content').innerHTML = $('#popover-content').html();
+        });
+        // check if adress exit in popover content
+        if(textContent.indexOf("Adresse") < 0) {
+          let coordinates = feature.getGeometry().getCoordinates();
+          // clone object to transform cooridnates
+          coordinates = JSON.parse(JSON.stringify(coordinates));
+          // reproject coordinates for the ban API
+          let newCoord = transform([coordinates[0], coordinates[1]], 'EPSG:3857', 'EPSG:4326');
+          // create request
+          let params = 'lon='+newCoord[0]+'&lat='+newCoord[1];
+          const http = new XMLHttpRequest();
+          http.open('GET', 'https://api-adresse.data.gouv.fr/reverse/?' + params, true);
+          // read request response
+          let infos = '';
+          http.onreadystatechange = function() {
+            // SUCCESS
+            if(http.status == 200 && http.responseText) {
+              let props = JSON.parse(http.responseText).features[0].properties;
+              textContent += controlText(textContent, '<strong>Adresse: </strong>' + props.name);
+              textContent += controlText(textContent, '<strong>Code postal: </strong>' + props.postcode);
+              textContent += controlText(textContent, '<strong>Ville: </strong>' + props.city);              
+              addToPopover(textContent.replace('name', 'Nom'));
+            } else {
+              // FAIL
+              addToPopover(textContent);
+            }
+          };
+          http.send();
+        } else {
+          textContent = textContent.replace('Code_Categorie','Type');
+          textContent = textContent.replace('Code_Postal','Code postal');          
+          addToPopover(textContent);
+        }        
       }
-    },
+    },  
     /**
      * Start geolocation trackink
      */
