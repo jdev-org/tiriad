@@ -227,7 +227,7 @@ export default {
         } else {
           // TODO : create v-if when button is create to hide zoom to layer action if not available.
           alert("Cette action n'est pas disponible pour cet élément.");
-        }        
+        }
       }
     },
     /**
@@ -348,9 +348,9 @@ export default {
       reader.readAsText(blob);
     },
     /**
-    * save file
+    * save file old
     */
-    saveFile(geoJsonLayer, filename) {
+    saveFileOld(geoJsonLayer, filename) {
       let requestBody = new FormData();
       let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
       let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
@@ -370,6 +370,18 @@ export default {
       .catch(function(){
         console.log('FAILURE!!');
       });      
+    },
+    /**
+     * save file new
+     */
+    saveFile(geoJsonLayer, fileName) {
+      let requestBody = new FormData();
+      requestBody.append('filename', filename);
+      let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
+      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }));
+      let request = new XMLHttpRequest();
+      request.open("POST", "./data.php");
+      request.send(formData);      
     },
     /**
      * Transform csv as object to geojson
