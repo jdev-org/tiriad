@@ -377,6 +377,7 @@ export default {
     saveFile(geoJsonLayer, filename) {
       let requestBody = new FormData();
       requestBody.append('filename', filename);
+      requestBody.append('content',geojsonStr);
       let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
       let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
       requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }));
