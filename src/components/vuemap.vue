@@ -179,7 +179,6 @@ export default {
      * @param popup - ol.overlay object
      */
     showOverlay(selectFeature, popup) {  
-      $(popup.getElement()).popover("dispose");   
       let app = this;
       // control text to add into popover
       let controlText = function(content, textToInsert) {
@@ -306,7 +305,11 @@ export default {
         let f = app.$store.state.map.forEachFeatureAtPixel(
             evt.pixel,
             function(ft, layer){
-              app.showOverlay(ft, popup);
+              if(ft.getProperties().features.length < 2){
+                app.showOverlay(ft, popup);
+              } else {
+                popup.setPosition(undefined);
+              }
               return ft;
             }
         );
