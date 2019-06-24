@@ -378,6 +378,7 @@ export default {
       let requestBody = new FormData();
       requestBody.append('filename', filename);
       let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
+      let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
       requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }));
       let request = new XMLHttpRequest();
       request.open("POST", "./data.php");
