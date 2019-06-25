@@ -402,7 +402,7 @@ export default {
     let res = null;
     const req = new XMLHttpRequest();
     req.onreadystatechange = function(event) {
-      if(request.readyState === 4 && request.status === 200){
+      if(req.readyState === 4 && req.status === 200){
         console.log(req);        
       }     
     }
