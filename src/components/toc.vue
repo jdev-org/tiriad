@@ -388,8 +388,9 @@ export default {
       
       let request = new XMLHttpRequest();
       request.onreadystatechange = function(event) {
-        console.log(request);
-        app.getFile(fileName);
+        if(request.readyState === 4 && request.status === 200){
+          app.getFile(fileName);
+        }
       };
       request.open("POST", "https://jdev.fr/tiriad/data.php");
       request.send(requestBody);
@@ -401,7 +402,9 @@ export default {
     let res = null;
     const req = new XMLHttpRequest();
     req.onreadystatechange = function(event) {
-     console.log(req);
+      if(request.readyState === 4 && request.status === 200){
+        console.log(req);        
+      }     
     }
     let requestBody = new FormData();
     requestBody.append('filename', fileName);
