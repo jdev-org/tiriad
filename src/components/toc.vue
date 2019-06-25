@@ -405,19 +405,18 @@ export default {
     // get file from server
     const req = new XMLHttpRequest();
     req.onreadystatechange = function(event) {
-      if(req.readyState === 4 && req.status === 200){
-        if(req.responseText != '') {
-          let jsonRead = req.responseText;
-          jsonLayer = JSON.parse(jsonRead);                    
-        }
+      if(req.readyState === 4 && req.status === 200 && req.responseText != ''){
+        
+        let jsonRead = req.responseText;
+        // return layer from file
+        jsonLayer = JSON.parse(jsonRead);
       }
+      return jsonLayer;
     }
     let requestBody = new FormData();
     requestBody.append('filename', fileName);
     req.open('POST', 'https://jdev.fr/tiriad/getData.php', false);    
-    req.send(requestBody);
-    // return layer from file
-    return jsonLayer;
+    req.send(requestBody);        
    },
     /**
      * Transform csv as object to geojson
