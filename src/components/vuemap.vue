@@ -19,48 +19,6 @@
       @mounted="onMapMounted"
     >
       <vl-view :zoom="getZoom()" :center="getCenter()" :rotation.sync="rotation"></vl-view>
-      <!-- base layers -->
-      <vl-layer-tile v-for="layer in baseLayers" :key="layer.name" :id="layer.name" :visible="layer.visible">
-        <component :is="'vl-source-' + layer.name" v-bind="layer"></component>
-      </vl-layer-tile>
-      <!--// base layers -->
-
-      <!-- other layers from config -->
-      <component v-for="layer in initLayers" :is="layer.cmp" :if="layer.visible" :key="layer.id" v-bind="layer">
-        <!-- add vl-source-* -->
-        <component :is="layer.source.cmp" v-bind="layer.source">
-          <!-- add static features to vl-source-vector if provided -->
-          <vl-feature :if="layer.source.staticFeatures && layer.source.staticFeatures.length"
-                      v-for="feature in layer.source.staticFeatures" :key="feature.id"
-                      :id="feature.id" :properties="feature.properties">
-            <component :is="geometryTypeToCmpName(feature.geometry.type)" v-bind="feature.geometry"></component>
-          </vl-feature>
-
-          <!-- add inner source if provided (like vl-source-vector inside vl-source-cluster) -->
-          <component v-if="layer.source.source" :is="layer.source.source.cmp" v-bind="layer.source.source">
-            <!-- add static features to vl-source-vector if provided -->
-            <vl-feature :if="layer.source.source.staticFeatures && layer.source.source.staticFeatures.length"
-                        v-for="feature in layer.source.source.staticFeatures" :key="feature.id"
-                        :id="feature.id" :properties="feature.properties">
-              <component :is="geometryTypeToCmpName(feature.geometry.type)" v-bind="feature.geometry"></component>
-            </vl-feature>
-          </component>
-        </component>
-        <!--// vl-source-* -->
-
-        <!-- add style components if provided -->
-        <!-- create vl-style-box or vl-style-func -->
-        <component :if="layer.style" v-for="(style, i) in layer.style" :key="i" :is="style.cmp" v-bind="style">
-          <!-- create inner style components: vl-style-circle, vl-style-icon, vl-style-fill, vl-style-stroke & etc -->
-          <component :if="style.styles" v-for="(st, cmp) in style.styles" :key="cmp" :is="cmp" v-bind="st">
-            <!-- vl-style-fill, vl-style-stroke if provided -->
-            <vl-style-fill v-if="st.fill" v-bind="st.fill"></vl-style-fill>
-            <vl-style-stroke v-if="st.stroke" v-bind="st.stroke"></vl-style-stroke>
-          </component>
-        </component>
-        <!--// style -->
-      </component>
-
     </vl-map>
     <div id="buttons-right" class="btn-group-vertical btn-action">
       <button type="button" @click="zoomIn" id="zoomInBtn" class="btn btn-sm btn-map">
