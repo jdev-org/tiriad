@@ -408,7 +408,7 @@ export default {
           app.getFile(fileName);
         }
       };
-      request.open("POST", "https://jdev.fr/tiriad/data.php");
+      request.open("POST", "https://jdev.fr/tiriad/php/data.php");
       request.send(requestBody);
     },
     /**
@@ -430,7 +430,7 @@ export default {
       };
       let requestBody = new FormData();
       requestBody.append("filename", fileName);
-      req.open("POST", "https://jdev.fr/tiriad/getData.php", false);
+      req.open("POST", "https://jdev.fr/tiriad/php/getData.php", false);
       req.send(requestBody);
     },
     /**
