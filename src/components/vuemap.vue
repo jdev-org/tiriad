@@ -1,4 +1,3 @@
-<!-- eslint-disable -->
 <template>
   <div class="vuemap">
     <!-- Popup content-->
@@ -82,25 +81,17 @@
     </div>
   </div>
 </template>
-
 <script>
-/* eslint-disable */
+/* eslint-disable no-undef */
 import OverviewMap from 'ol/control/OverviewMap';
-import {
-  createProj, addProj, findPointOnSurface, createStyle,
-} from 'vuelayers/lib/ol-ext';
+import { kebabCase } from 'lodash';
+import { createStyle } from 'vuelayers/lib/ol-ext';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
 import KML from 'ol/format/KML';
 import Style from 'ol/style/Style';
-import Circle from 'ol/style/Circle';
-import Fill from 'ol/style/Fill';
 import Icon from 'ol/style/Icon';
-import Stroke from 'ol/style/Stroke';
 import GeoJSON from 'ol/format/GeoJSON';
-import fromLonLat from 'ol/proj';
-import axios from 'axios';
-import kebabCase from 'lodash';
 import Cluster from 'ol/source/Cluster'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
@@ -198,13 +189,11 @@ export default {
       };
       // get properties
       if(selectFeature.getProperties().features){
-        let features = selectFeature.getProperties().features;
-        let countFeatures = features.length;
-        
-        app.popupCount = selectFeature.getProperties().features.length;
+        let features = selectFeature.getProperties().features;        
+        app.popupCount = features.length;
         // display attributes into popup
         // only for the first feature
-        let feature = selectFeature.getProperties().features[0];
+        let feature = features[0];
         let position = feature.getGeometry().getCoordinates();
         // locate popover
         popup.setPosition(position);
@@ -234,10 +223,9 @@ export default {
           const http = new XMLHttpRequest();
           http.open('GET', 'https://api-adresse.data.gouv.fr/reverse/?' + params, true);
           // read request response
-          let infos = '';
           http.onreadystatechange = function() {
             // SUCCESS
-            if(http.status == 200 && http.responseText) {
+            if(http.status == 200 && http.responseText && JSON.parse(http.responseText).features.length > 0) {
               let props = JSON.parse(http.responseText).features[0].properties;
               textContent += controlText(textContent, '<strong>Adresse: </strong>' + props.name);
               textContent += controlText(textContent, '<strong>Code postal: </strong>' + props.postcode);
@@ -275,7 +263,6 @@ export default {
      * @return ol.overlay object as Bootstrap popover
      */
     createOverlay() {
-      let app = this;
       // popup content
       let popup = new Overlay({
         element: document.getElementById('popup'),
@@ -293,18 +280,14 @@ export default {
      * @param popup - ol.overlay
      */
     addSelectInterraction(popup) {
-      // close popup
-      popup.setPosition(undefined);
       // select interaction working on "click"
-      let element = popup.getElement();
       let app = this;
-      
       // event to hide or show popover
       this.$store.state.map.on('click', function(evt) {
         popup.setPosition(undefined);
-        let f = app.$store.state.map.forEachFeatureAtPixel(
+        app.$store.state.map.forEachFeatureAtPixel(
             evt.pixel,
-            function(ft, layer){
+            function(ft){
               if(ft.getProperties().features.length < 2){
                 app.showOverlay(ft, popup);
               } else {
@@ -479,14 +462,15 @@ export default {
           break;
         case 'TILE':
           formatFactory = new TileLayer();
+          break;
         default:
           null
-      };
+      }
       // for basemap
       if(params.format === 'TILE' && params.type == 'OSM') {
         var raster = new TileLayer({
           source: new OSM(),
-          name: params.name ? params.name : param.type + app.getRandomId(),
+          name: params.name ? params.name : params.type + app.getRandomId(),
           id: params.id ? params.id : app.getRandomId()
         });
         return raster

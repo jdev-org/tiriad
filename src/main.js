@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import Vue from 'vue';
 import Vuex from 'vuex'
 import VueLayers from 'vuelayers';
@@ -20,9 +22,8 @@ Vue.use(VueLayers);
 Vue.use(Buefy)
 Vue.use(Papa);
 Vue.component('font-awesome-icon', FontAwesomeIcon)
-
-window.$ = require('jquery')
-window.JQuery = require('jquery')
+window.$ = require('jquery');
+window.JQuery = require('jquery');
 Vue.config.productionTip = false;
 
 new Vue({

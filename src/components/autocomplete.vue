@@ -1,4 +1,4 @@
-<!-- eslint-disable -->
+
 <template>
 <div class='row col-12'>
   <b-autocomplete
@@ -26,8 +26,8 @@
 </div>
 </template>
 <script>
-/* eslint-disable */
-import { debounce, kebabCase } from 'lodash';
+/* eslint-disable no-undef */
+import { debounce } from 'lodash';
 import axios from 'axios';
 import Point from 'ol/geom/Point';
 import Feature from 'ol/Feature';
@@ -39,7 +39,6 @@ import { transform } from 'ol/proj';
 import Circle from 'ol/style/Circle';
 import Stroke from 'ol/style/Stroke';
 import { easeOut } from 'ol/easing';
-import Observable from 'ol/Observable';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -68,10 +67,8 @@ export default {
      * Animation to display search adress result
      * @param map - ol.Map
      * @param feature - ol.Feature from autocompletion selection
-     * @param source - ol.Source for result layer
      */
-    flash(map, feature, source) {
-      let app = this;
+    flash(map, feature) {
       let duration = 3000;
       let start = new Date().getTime();
       function animate(event) {

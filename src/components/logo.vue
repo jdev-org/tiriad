@@ -1,4 +1,3 @@
-<!-- eslint-disable -->
 <template>
     <div id="logo-brand" class="logo-org col-4 col-xs-6 col-sm-2 col-md-2 pr-0">
         <a href="http://distillerie-vercors.com">
@@ -7,7 +6,7 @@
     </div>
 </template>
 <script>
-/* eslint-disable */
+/* eslint-disable no-undef */
 export default {
   name: 'logo',
 };

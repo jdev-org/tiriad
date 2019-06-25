@@ -167,6 +167,7 @@
   </div>
 </template>
 <script>
+/* eslint-disable no-undef */
 import Papa from "papaparse";
 import GeoJSON from "ol/format/GeoJSON";
 import VectorSource from "ol/source/Vector";
@@ -436,7 +437,6 @@ export default {
      * Transform csv as object to geojson
      */
     csvToJsonPoints(fileName, csvObject, crs) {
-      const app = this;
       fileName = fileName.replace(".csv", "");
       // layer skeleton
       const geojsonLayer = {
@@ -559,7 +559,6 @@ export default {
      * Reproject features array
      */
     reprojectFeatures(featuresArray, srs) {
-      let app = this;
       const reprojFeatures = [];
       featuresArray.forEach(f => {
         f.getGeometry().transform(srs, this.mapProjection);

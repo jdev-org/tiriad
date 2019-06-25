@@ -1,4 +1,3 @@
-<!-- eslint-disable -->
 <template>
   <div id="main" class="drop container-fluid p-0">
     <div id="content" class="row-fuild justify-content-center">
@@ -15,7 +14,7 @@
 </template>
 
 <script>
-/* eslint-disable */
+/* eslint-disable no-undef */
 import vuemap from './vuemap.vue';
 import autocomplete from './autocomplete.vue';
 import logo from './logo.vue';
@@ -48,7 +47,6 @@ export default {
 	height: 100%;
 }
 .navbar {
-	/*background-color: rgba(26, 112, 175, 0.8);*/
   background-color: transparent;
 }
 </style>

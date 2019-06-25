@@ -1,4 +1,3 @@
-<!-- eslint-disable -->
 <template>
     <!-- Popup -->
     <div :id="id" class="ol-popup">
@@ -6,7 +5,6 @@
     </div>
 </template>
 <script>
-/* eslint-disable */
 export default {
     name: 'overLaysPopup',
     props: ['id'],
