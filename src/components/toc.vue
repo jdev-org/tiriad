@@ -376,6 +376,7 @@ export default {
     },
     /**
      * save file new
+     * TODO : add loader
      */
     saveFile(geojsonLayer, fileName) {
       let app = this;
@@ -397,20 +398,26 @@ export default {
     },
     /** 
      * Get file from server
+     * TODO : add loader
     */
    getFile(fileName) {
-    let res = null;
+    let jsonLayer = null;
+    // get file from server
     const req = new XMLHttpRequest();
     req.onreadystatechange = function(event) {
       if(req.readyState === 4 && req.status === 200){
-        console.log(req);        
-      }     
+        if(req.responseText != '') {
+          let jsonRead = req.responseText;
+          jsonLayer = JSON.parse(jsonRead);                    
+        }
+      }
     }
     let requestBody = new FormData();
     requestBody.append('filename', fileName);
     req.open('POST', 'https://jdev.fr/tiriad/getData.php', false);    
     req.send(requestBody);
-    return res;     
+    // return layer from file
+    return jsonLayer;
    },
     /**
      * Transform csv as object to geojson
