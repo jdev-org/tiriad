@@ -405,13 +405,13 @@ export default {
     // get file from server
     const req = new XMLHttpRequest();
     req.onreadystatechange = function(event) {
-      if(req.readyState === 4 && req.status === 200 && req.responseText != ''){
-        
+      if(req.readyState === 4 && req.status === 200 && req.responseText != ''){        
         let jsonRead = req.responseText;
         // return layer from file
-        jsonLayer = JSON.parse(jsonRead);
-      }
-      return jsonLayer;
+        return jsonLayer = JSON.parse(jsonRead);
+      } else {
+        return jsonLayer;
+      }      
     }
     let requestBody = new FormData();
     requestBody.append('filename', fileName);
