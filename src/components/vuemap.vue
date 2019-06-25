@@ -68,6 +68,9 @@ export default {
   components: {
     popup
   },
+  props: {    
+    allowDragAndDropMap: Boolean
+  },  
   data() {
     return {
       visible: true,
@@ -535,8 +538,9 @@ export default {
         let popupInfo = this.createOverlay();
         this.addClickInteraction(popupInfo);
         // add drag&drop interaction
-        this.addDragAndDropInteraction(false);
-
+        if(this.allowDragAndDropMap){
+          this.addDragAndDropInteraction(false);
+        }
       }
     },
     /**

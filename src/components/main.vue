@@ -4,7 +4,7 @@
       <nav class="navbar fixed-top navbar-light p-1 col-12">
         <autocomplete :zoom="zoomAdress" :flashResult="showResultAnimation"/>
       </nav>
-      <vuemap/>
+      <vuemap :allowDragAndDropMap="activeDD"/>
       <div class="row-fluid col-12 p-0">
         <toc/>
       </div>
@@ -33,7 +33,9 @@ export default {
       // search adress result's zoom level      
       zoomAdress: 9,
       // animation or geopin
-      showResultAnimation: false
+      showResultAnimation: false,
+      // drag&drop from file to the map directly to display data
+      activeDD: false
     };
   },
   method: { // pass methods here
