@@ -46,10 +46,8 @@ import { kebabCase } from 'lodash';
 import { createStyle } from 'vuelayers/lib/ol-ext';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
-import KML from 'ol/format/KML';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
-import GeoJSON from 'ol/format/GeoJSON';
 import Cluster from 'ol/source/Cluster'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
@@ -57,6 +55,8 @@ import Overlay from 'ol/Overlay';
 import popup from './popup';
 import Geolocation from 'ol/Geolocation';
 import { transform } from 'ol/proj';
+import { DragAndDrop } from 'ol/interaction';
+import {GPX, GeoJSON, IGC, KML, TopoJSON} from 'ol/format';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -128,7 +128,6 @@ export default {
      * @param popup - ol.overlay object
      */
     showOverlay(selectFeature, popup) {  
-      let app = this;
       // control text to add into popover
       let controlText = function(content, textToInsert) {
         if(content.indexOf(textToInsert) < 0 && textToInsert != '') {
@@ -146,12 +145,11 @@ export default {
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
       };
       // get properties
-      if(selectFeature.getProperties().features){
-        let features = selectFeature.getProperties().features;        
-        app.popupCount = features.length;
-        // display attributes into popup
-        // only for the first feature
-        let feature = features[0];
+      let props = selectFeature.getProperties();
+      let hasPropsFeatures = props.hasOwnProperty('features');
+      if(hasPropsFeatures || props) {
+        // get feature to display        
+        let feature = hasPropsFeatures ? selectFeature.getProperties().features[0] : selectFeature;
         let position = feature.getGeometry().getCoordinates();
         // locate popover
         popup.setPosition(position);
@@ -234,11 +232,51 @@ export default {
       return popup;
     },
     /**
+     * Add drag&drop interactions to display geo file on map
+     * @param {Boolean} zoomToExtent
+     */
+    addDragAndDropInteraction(zoomToExent) {
+      let map = this.$store.state.map;
+      let app = this;
+      // create interaction
+      let dragAndDropInteraction  = new DragAndDrop({
+        formatConstructors: [
+          GPX,
+          GeoJSON,
+          IGC,
+          KML,
+          TopoJSON
+        ]
+      });
+      // add interaction to map
+      map.addInteraction(dragAndDropInteraction );
+      // event behavior
+      dragAndDropInteraction.on('addfeatures', function(event) {        
+        const rg = new RegExp("[^.]+");
+        const name = event.file.name.match(rg)[0];        
+        const id = app.getRandomId();
+        let vectorSource = new VectorSource({
+          features: event.features
+        });
+        // remove layer from toc and map if already exist
+        app.$store.commit('removeLayerByName', name);
+        map.addLayer(new VectorLayer({
+          renderMode: 'image',
+          source: vectorSource,
+          id: id,
+          name: name
+        }));
+        if(zoomToExent) {
+          map.getView().fit(vectorSource.getExtent());
+        }        
+      });      
+    },
+    /**
      * Add click interraction to display infos into overlay popover
      * @param popup - ol.overlay
      */
-    addSelectInterraction(popup) {
-      // select interaction working on "click"
+    addClickInteraction(popup) {
+      // click interaction working on "click"
       let app = this;
       // event to hide or show popover
       this.$store.state.map.on('click', function(evt) {
@@ -246,7 +284,10 @@ export default {
         app.$store.state.map.forEachFeatureAtPixel(
             evt.pixel,
             function(ft){
-              if(ft.getProperties().features.length < 2){
+              let properties = ft.getProperties();
+              if(properties.features && properties.features.length < 2){
+                app.showOverlay(ft, popup);
+              } else if(properties){
                 app.showOverlay(ft, popup);
               } else {
                 popup.setPosition(undefined);
@@ -484,7 +525,7 @@ export default {
         });
         map.getControls().extend([this.controls.overView]);
         // event to update TOC content and display new layers layers
-        map.getLayers().on('add', function(e) {          
+        map.getLayers().on('add', function(e) {
           app.$store.commit('setLayerToToc', e.element);
         });          
         this.firstLayer.forEach(function(p) {
@@ -492,7 +533,10 @@ export default {
           map.addLayer(newLayer);
         });
         let popupInfo = this.createOverlay();
-        this.addSelectInterraction(popupInfo);
+        this.addClickInteraction(popupInfo);
+        // add drag&drop interaction
+        this.addDragAndDropInteraction(false);
+
       }
     },
     /**

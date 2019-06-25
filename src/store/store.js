@@ -45,6 +45,34 @@ export const store = new Vuex.Store({
       });
     },
     /**
+     * Remove layer from map and TOC
+     * @param {Object} state 
+     * @param {*} id of layer to remove
+     */
+    removeLayerById(state, id) {      
+      state.map.getLayers().array_.forEach(function(layer) {
+        if (id === layer.get("id")) {
+          state.map.removeLayer(layer);
+          store.commit('removeTocLayer',id);
+        }
+      });
+    },
+    /**
+     * Remove layer from map and TOC
+     * @param {Object} state 
+     * @param {String} name of layer to remove
+     */
+    removeLayerByName(state, name) {
+      let store = this;      
+      state.map.getLayers().array_.forEach(function(layer) {
+        if (name === layer.get("name")) {
+          let id = layer.get('id');
+          state.map.removeLayer(layer);
+          store.commit('removeTocLayer',id);
+        }
+      });
+    },    
+    /**
      * setMap is use to add layers to map from array
      * @param {Object} state
      * @param {Integer} val set zoom level
