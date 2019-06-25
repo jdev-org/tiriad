@@ -102,7 +102,7 @@
               <i>Adresse (1), Code Postal, Ville</i>
             </p>                  
             <b-field>
-              <b-upload v-model="dropFiles" multiple drag-drop @input="readUploadFile()">
+              <b-upload name="upload" v-model="dropFiles" multiple drag-drop @input="readUploadFile()">
                 <section class="section">
                   <div class="content has-text-centered">
                     <p>
