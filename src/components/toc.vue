@@ -409,9 +409,7 @@ export default {
         let jsonRead = req.responseText;
         // return layer from file
         return jsonLayer = JSON.parse(jsonRead);
-      } else {
-        return jsonLayer;
-      }      
+      }
     }
     let requestBody = new FormData();
     requestBody.append('filename', fileName);
