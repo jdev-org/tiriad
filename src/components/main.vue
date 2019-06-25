@@ -31,7 +31,7 @@ export default {
   data() {
     return {
       // search adress result's zoom level      
-      zoomAdress: 11,
+      zoomAdress: 9,
       // animation or geopin
       showResultAnimation: false
     };
