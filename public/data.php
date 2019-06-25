@@ -2,7 +2,7 @@
 // get filename
 $fichier=$_POST['filename'];
 $geojsonStr=$_POST['content'];
-$destFolder="/tmp";
+$destFolder="/tmp/upload";
 // get filecontent
 $geojson = file_get_contents('php://input');
 //save to disk

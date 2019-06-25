@@ -351,6 +351,7 @@ export default {
     * save file old
     */
     saveFileOld(geoJsonLayer, filename) {
+      let app = this;
       let requestBody = new FormData();
       let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
       let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
@@ -366,6 +367,8 @@ export default {
         }
       ).then(function(data){
         console.log(data.data);
+        let readSaveFile = app.getFile();
+        console.log(readSaveFile);
       })
       .catch(function(){
         console.log('FAILURE!!');
@@ -374,17 +377,38 @@ export default {
     /**
      * save file new
      */
-    saveFile(geoJsonLayer, filename) {
+    saveFile(geojsonLayer, fileName) {
+      let app = this;
       let requestBody = new FormData();
-      let readFeatures = (new GeoJSON()).readFeatures(geoJsonLayer);
-      let geojsonStr = (new GeoJSON()).writeFeatures(readFeatures);
-      requestBody.append('filename', filename);
-      requestBody.append('content', geojsonStr);
-      requestBody.append('data', new Blob([geojsonStr], { type: 'json; charset=utf-8' }));
+      let geojson = JSON.stringify(geojsonLayer);
+      fileName += '.json'; 
+
+      requestBody.append('filename', fileName);
+      requestBody.append('content', geojson);
+      
       let request = new XMLHttpRequest();
-      request.open("POST", "./data.php");
+      request.onreadystatechange = function(event) {
+        console.log(request);
+        app.getFile(fileName);
+      };
+      request.open("POST", "https://jdev.fr/tiriad/data.php");
       request.send(requestBody);
     },
+    /** 
+     * Get file from server
+    */
+   getFile(fileName) {
+    let res = null;
+    const req = new XMLHttpRequest();
+    req.onreadystatechange = function(event) {
+     console.log(req);
+    }
+    let requestBody = new FormData();
+    requestBody.append('filename', fileName);
+    req.open('POST', 'https://jdev.fr/tiriad/getData.php', false);    
+    req.send(requestBody);
+    return res;     
+   },
     /**
      * Transform csv as object to geojson
      */
@@ -467,8 +491,8 @@ export default {
         }
       });
       fileName = fileName.replace(' ','');
-      //save file to server
-      this.saveFile(geojsonLayer, fileName);
+      //save file to server      
+      this.saveFile(geojsonLayer, fileName);      
       // display layer to map
       this.displayJson(geojsonLayer, geojsonLayer.crs.properties.name, fileName, true);
     },
