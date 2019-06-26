@@ -7,5 +7,5 @@ $geojsonStr=$_POST['content'];
 $destFolder="../data/layers";
 //save to disk
 header('Content-type: application/json',true);
-echo '{"success":true, "filepath":"'.$fichier.'", "geojsonString":'.$geojsonStr.'}';
+echo '{"success":true, "filepath":"'.$fichier.'", "path":'.$destFolder. DIRECTORY_SEPARATOR .$fichier.'}';
 ?>
