@@ -2,6 +2,7 @@
 header("Content-Type: application/json");
 
 $fileName = $_POST['filename'];
-$strJsonFileContents = file_get_contents("/tmp/upload/".$fileName);
+$folder="../data/layers";
+$strJsonFileContents = file_get_contents($folder. DIRECTORY_SEPARATOR .$fileName);
 echo $strJsonFileContents;
 ?>
