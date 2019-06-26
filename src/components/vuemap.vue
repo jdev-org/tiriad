@@ -126,6 +126,30 @@ export default {
   },
   methods: {
     /**
+     * Get layers from file system
+     * TODO : finish and test
+     */
+    initMapLayers(map) {
+      let app = this;    
+
+      let request = new XMLHttpRequest();
+      request.onreadystatechange = function() {        
+        if(request.responseText) {
+          console.log(JSON.parse(request.responseText[0]));
+        }
+        
+        if(request.status === 200 && request.readyState === 4 && request.responseText) {
+          // list layers path
+          let layersPath = [];
+          console.log(JSON.parse(request.responseText));          
+          // call layers one by one to get features          
+          // display layer to map
+        }
+      }
+      request.open("POST", "https://jdev.fr/tiriad/php/getLayers.php", false);
+      request.send(null);
+    },
+    /**
      * Overlay content elements
      * @param e - event
      * @param popup - ol.overlay object
@@ -511,8 +535,7 @@ export default {
       const app = this;
       // get map from vue instance
       const map = this.getMap();
-      // start tracking
-      //this.initGeoloc();
+      // start tracking      
       if (map) {
         // set map to global store
         this.setMap(map);
@@ -531,10 +554,11 @@ export default {
         map.getLayers().on('add', function(e) {
           app.$store.commit('setLayerToToc', e.element);
         });          
-        this.firstLayer.forEach(function(p) {
+        /*this.firstLayer.forEach(function(p) {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
-        });
+        });*/
+        this.initMapLayers(map);
         let popupInfo = this.createOverlay();
         this.addClickInteraction(popupInfo);
         // add drag&drop interaction
