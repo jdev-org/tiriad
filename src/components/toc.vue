@@ -33,7 +33,7 @@
                   >
                     <i class="fa fa-eye"></i>
                   </button>
-                  <button
+                  <button v-if="layer.getSource().getFeatures"
                     type="button"
                     class="btn btn-sm py-0 px-2"
                     @click="saveLayer"
@@ -41,7 +41,7 @@
                   >
                     <i class="fa fa-save" activate="false"></i>
                   </button>                  
-                  <button
+                  <button v-if="layer.getSource().getFeatures"
                     type="button"
                     class="btn btn-sm py-0 px-2"
                     @click="destroyLayer"
