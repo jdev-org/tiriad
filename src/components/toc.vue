@@ -369,10 +369,15 @@ export default {
     destroyLayer(e) {
       let isBtn = e.target.type == "button" ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
+      // remove layer from file system
+      if(this.getLayerById(layerId).getProperties()['name']) {
+        let name = this.getLayerById(layerId).getProperties()['name'];
+        this.removeFile(name);
+      }      
       // remove layer
       this.removeLayerById(layerId);
       // remove directly layer into store. VueJs bind this action into toc and remove layer container automaticaly.
-      this.$store.commit("removeTocLayer", layerId);      
+      this.$store.commit("removeTocLayer", layerId);
     },
     /**
      * Use to manage layer visibility and associate icon
@@ -438,8 +443,8 @@ export default {
     removeFile(layerName) {
       let app = this;
       let requestBody = new FormData();
-      fileName += ".json";
-      requestBody.append("filename", layerName.replace(' ','_'));
+      let fileName = layerName + ".json";
+      requestBody.append("filename", fileName.replace(' ','_'));
 
       let request = new XMLHttpRequest();
       request.open("POST", "https://jdev.fr/tiriad/php/removeFile.php");
