@@ -41,7 +41,7 @@
                   >
                     <i class="fa fa-save" activate="false"></i>
                   </button>                  
-                  <button v-if="layer.getSource().getFeatures"
+                  <button
                     type="button"
                     class="btn btn-sm py-0 px-2"
                     @click="destroyLayer"
@@ -370,7 +370,8 @@ export default {
       let isBtn = e.target.type == "button" ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
       // remove layer from file system
-      if(this.getLayerById(layerId).getProperties()['name']) {
+      let props = this.getLayerById(layerId).getProperties();
+      if(props['name'] && props.getSource && props.getfeatures) {
         let name = this.getLayerById(layerId).getProperties()['name'];
         this.removeFile(name);
       }      
