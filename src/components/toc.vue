@@ -372,7 +372,7 @@ export default {
       // remove layer
       this.removeLayerById(layerId);
       // remove directly layer into store. VueJs bind this action into toc and remove layer container automaticaly.
-      this.$store.commit("removeTocLayer", layerId);
+      this.$store.commit("removeTocLayer", layerId);      
     },
     /**
      * Use to manage layer visibility and associate icon
@@ -425,17 +425,26 @@ export default {
       fileName += ".json";
 
       requestBody.append("filename", fileName.replace(' ','_'));
-      requestBody.append("content", geojson);
+      requestBody.append("content", "geojson");
 
       let request = new XMLHttpRequest();
-      request.onreadystatechange = function() {
-        if (request.readyState === 4 && request.status === 200) {
-          //app.getFile(fileName);
-        }
-      };
       request.open("POST", "https://jdev.fr/tiriad/php/data.php");
       request.send(requestBody);
     },
+    /**
+     * Remove file on disk
+     * @param {String} - layer name is the file name with json extension
+     */
+    removeFile(layerName) {
+      let app = this;
+      let requestBody = new FormData();
+      fileName += ".json";
+      requestBody.append("filename", layerName.replace(' ','_'));
+
+      let request = new XMLHttpRequest();
+      request.open("POST", "https://jdev.fr/tiriad/php/removeFile.php");
+      request.send(requestBody);
+    },    
     /**
      * Get file from server
      * TODO : add loader
