@@ -1,5 +1,5 @@
 <?php
-$dir = "./data/layers";
+$dir = "../data/layers";
 $layers = array();
 // check if dir path is a directory
 if(is_dir($dir)){
