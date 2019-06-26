@@ -3,13 +3,14 @@
 header("Content-Type: application/json");
 // get params
 $dir = '../data/layers';
-$filename = $_POST['filename'];
-$path = $dir . DIRECTORY_SEPARATOR .$filename
+//$filename = $_POST['filename'];
+$filename="Point_de distribution.json";
+$path = $dir . DIRECTORY_SEPARATOR .$filename;
 // remove directory
-if (file_exists($path)) 
-    unlink($path_user.$file_name);
-    echo '{"Success":true}'
+if (file_exists($path)) {
+    unlink($path);
+    echo '{"success":true}';
 } else {
-    echo '{"Success":false}'
+    echo '{"success":false}';
 }
 ?>
