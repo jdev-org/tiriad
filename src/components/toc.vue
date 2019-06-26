@@ -41,7 +41,7 @@
                   >
                     <i class="fa fa-trash" activate="false"></i>
                   </button>
-                  <button
+                  <button v-if="layer.getSource().getExtent"
                     type="button"
                     class="btn btn-sm py-0 px-2"
                     @click="zoomToLayer"
