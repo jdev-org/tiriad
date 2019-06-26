@@ -57,6 +57,7 @@ import Geolocation from 'ol/Geolocation';
 import { transform } from 'ol/proj';
 import { DragAndDrop } from 'ol/interaction';
 import {GPX, GeoJSON, IGC, KML, TopoJSON} from 'ol/format';
+import axios from 'axios';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -132,22 +133,23 @@ export default {
     initMapLayers(map) {
       let app = this;    
 
-      let request = new XMLHttpRequest();
+      axios.get('https://jdev.fr/tiriad/php/getLayers.php')
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+
+
+      /*let request = new XMLHttpRequest();
+      let requestBody = new FormData();
+      requestBody.append("filename", "test");  
       request.onreadystatechange = function() {        
-        if(request.responseText) {
-          console.log(JSON.parse(request.responseText[0]));
-        }
-        
-        if(request.status === 200 && request.readyState === 4 && request.responseText) {
-          // list layers path
-          let layersPath = [];
-          console.log(JSON.parse(request.responseText));          
-          // call layers one by one to get features          
-          // display layer to map
-        }
+        console.log(request);
       }
       request.open("POST", "https://jdev.fr/tiriad/php/getLayers.php", false);
-      request.send(null);
+      request.send(requestBody);*/
     },
     /**
      * Overlay content elements
@@ -554,11 +556,11 @@ export default {
         map.getLayers().on('add', function(e) {
           app.$store.commit('setLayerToToc', e.element);
         });          
-        /*this.firstLayer.forEach(function(p) {
+        this.firstLayer.forEach(function(p) {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
-        });*/
-        this.initMapLayers(map);
+        });
+        //this.initMapLayers(map);
         let popupInfo = this.createOverlay();
         this.addClickInteraction(popupInfo);
         // add drag&drop interaction
