@@ -36,6 +36,14 @@
                   <button
                     type="button"
                     class="btn btn-sm py-0 px-2"
+                    @click="saveLayer"
+                    :value="layer.getProperties().id"
+                  >
+                    <i class="fa fa-save" activate="false"></i>
+                  </button>                  
+                  <button
+                    type="button"
+                    class="btn btn-sm py-0 px-2"
                     @click="destroyLayer"
                     :value="layer.getProperties().id"
                   >
@@ -169,15 +177,13 @@
 <script>
 /* eslint-disable no-undef */
 import Papa from "papaparse";
-import GeoJSON from "ol/format/GeoJSON";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { createStyle } from "vuelayers/lib/ol-ext";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import Cluster from "ol/source/Cluster";
-import KML from "ol/format/KML";
-
+import {GeoJSON, KML} from 'ol/format';
 // bootstrap tooltips
 $(document).ready(() => {
   $('[data-toggle="tooltip"]').tooltip();
@@ -203,6 +209,28 @@ export default {
     };
   },
   methods: {
+    /**
+     * Method to save layer to the server as geojson
+     */
+    saveLayer(e) {
+      let layer, source, name, layerId, json;
+      let isBtn = e.target.type == "button" ? true : false;
+      layerId = isBtn ? e.target.value : e.target.parentElement.value;
+      if (layerId) {
+        layer = this.getLayerById(layerId);
+        source = layer.getSource();
+        // for sub source as cluster
+        source = source.source ? source.getSource() : source;
+        name = layer.getProperties()['name'];
+        if(source && name) {
+          json = (new GeoJSON).writeFeatures(source.getFeatures());
+          this.saveFile(json, name);
+        }
+      }
+    },
+    /**
+     * Create cluster style
+     */    
     createClientClusterStyle() {
       let cache = {};
       return function(feature) {
@@ -251,7 +279,6 @@ export default {
      * Zoom to a given layer extent
      * @param e - event
      */
-
     zoomToLayer(e) {
       let isBtn = e.target.type == "button" ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
@@ -287,7 +314,6 @@ export default {
      * @param e - event
      * @param msg - optionnal message to display into alert panel
      */
-
     displayGeocodPanel(e, msg) {
       if (e && this.isGeocodage === "") {
         // do not geocode data
@@ -393,10 +419,9 @@ export default {
      * save file new
      * TODO : add loader
      */
-    saveFile(geojsonLayer, fileName) {
+    saveFile(geojson, fileName) {
       let app = this;
-      let requestBody = new FormData();
-      let geojson = JSON.stringify(geojsonLayer);
+      let requestBody = new FormData();      
       fileName += ".json";
 
       requestBody.append("filename", fileName);
@@ -519,8 +544,6 @@ export default {
         }
       });
       fileName = fileName.replace(" ", "");
-      //save file to server
-      this.saveFile(geojsonLayer, fileName);
       // display layer to map
       this.displayJson(
         geojsonLayer,
