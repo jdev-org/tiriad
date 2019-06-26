@@ -14,7 +14,7 @@ if(is_dir($dir)){
                     $layers[] = array(
                         'file' => $file,
                         'path' => $path,
-                        'content' => file_get_contents($path)
+                        //'content' => file_get_contents($path)
                     );
                 }
             }
