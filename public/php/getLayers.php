@@ -1,5 +1,6 @@
 <?php
 $dir = "../data/layers";
+$publicPath = "./data/layers";
 $layers = array();
 // check if dir path is a directory
 if(is_dir($dir)){
@@ -12,8 +13,8 @@ if(is_dir($dir)){
                 if(file_get_contents($path) != '') {
                     // add files info to array
                     $layers[] = array(
-                        'file' => $file,
-                        'path' => $path,
+                        'name' => $file,
+                        'path' => $publicPath,
                         //'content' => file_get_contents($path)
                     );
                 }
