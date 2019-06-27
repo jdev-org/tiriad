@@ -133,23 +133,13 @@ export default {
     initMapLayers(map) {
       let app = this;    
 
-      axios.get('https://jdev.fr/tiriad/php/getLayers.php')
-        .then(function (response) {
-          console.log(response);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-
-
-      /*let request = new XMLHttpRequest();
-      let requestBody = new FormData();
-      requestBody.append("filename", "test");  
+      let request = new XMLHttpRequest();
+      let requestBody = new FormData();      
       request.onreadystatechange = function() {        
         console.log(request);
       }
       request.open("POST", "https://jdev.fr/tiriad/php/getLayers.php", false);
-      request.send(requestBody);*/
+      request.send(requestBody);
     },
     /**
      * Overlay content elements
@@ -559,7 +549,7 @@ export default {
         this.firstLayer.forEach(function(p) {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
-        });
+        });        
         //this.initMapLayers(map);
         let popupInfo = this.createOverlay();
         this.addClickInteraction(popupInfo);
@@ -567,6 +557,17 @@ export default {
         if(this.allowDragAndDropMap){
           this.addDragAndDropInteraction(false);
         }
+
+        // read files from data/layers
+        function getFile() {
+          const req = new XMLHttpRequest();
+          req.onreadystatechange = function(event) {
+              console.log(req);
+          };
+          req.open('POST', 'https://jdev.fr/tiriad/php/getLayers.php', true);          
+          req.send();
+        }
+        getFile();
       }
     },
     /**
