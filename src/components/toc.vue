@@ -371,7 +371,7 @@ export default {
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
       // remove layer from file system
       let props = this.getLayerById(layerId).getProperties();
-      if(props['name'] && props.getSource && props.getfeatures) {
+      if(props['name'] && props.source && props.source.features) {
         let name = this.getLayerById(layerId).getProperties()['name'];
         this.removeFile(name);
       }      
