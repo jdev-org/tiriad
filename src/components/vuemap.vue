@@ -560,7 +560,7 @@ export default {
 
         // read files from data/layers
         function getFile() {
-          app = this;
+          let app = this;
           const req = new XMLHttpRequest();
           req.onreadystatechange = function(event) {
             if(req.status === 200 && req.readyState === 4 && req.responseText) {              
