@@ -133,8 +133,12 @@ export default {
       let app = this;
       const req = new XMLHttpRequest();
       req.onreadystatechange = function() {
-        if(req.status === 200 && req.readyState === 4 && req.responseText) {              
-          req.responseText.forEach(function(file) {
+        if(req.status === 200 && req.readyState === 4 && req.responseText) {
+          let response = req.responseText; 
+          console.log(response);
+          console.log(typeof(response));
+          console.log(JSON.parse(response));
+          response.forEach(function(file) {
             const rg = new RegExp("[^.]+");
             const name = file.name.match(rg)[0];
             let layer = {
