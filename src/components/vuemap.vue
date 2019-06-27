@@ -526,7 +526,7 @@ export default {
       let name = params.name ? params.name : '';
       let id = params.id ? params.id : '';
       layer.setProperties({
-        'name':name,
+        'name': name.replace(/_/g, ' '),
         'id': id
       });
       layer.setVisible(params.visible);
