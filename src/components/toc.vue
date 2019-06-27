@@ -429,8 +429,9 @@ export default {
       let app = this;
       let requestBody = new FormData();      
       fileName += ".json";
-
-      requestBody.append("filename", fileName.replace(' ','_'));
+      fileName = fileName.replace(/é/g, 'e');
+      fileName = fileName.replace(/ /g, '_');
+      requestBody.append("filename", fileName);      
       requestBody.append("content", "geojson");
 
       let request = new XMLHttpRequest();
