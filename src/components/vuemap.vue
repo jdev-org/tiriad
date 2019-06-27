@@ -145,7 +145,7 @@ export default {
               visible: true,
             }
             let newLayer = app.createLayer(layer);
-            app.map.addLayer(newLayer);      
+            app.$store.state.map.addLayer(newLayer);      
           });
         }
       };          
