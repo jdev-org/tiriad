@@ -435,6 +435,9 @@ export default {
       requestBody.append("content", "geojson");
 
       let request = new XMLHttpRequest();
+      request.onreadystatechange = function(event) {
+        console.log(request);
+      };      
       request.open("POST", "https://jdev.fr/tiriad/php/data.php");
       request.send(requestBody);
     },
@@ -447,7 +450,6 @@ export default {
       let requestBody = new FormData();
       let fileName = layerName + ".json";
       requestBody.append("filename", fileName.replace(' ','_'));
-
       let request = new XMLHttpRequest();
       request.open("POST", "https://jdev.fr/tiriad/php/removeFile.php");
       request.send(requestBody);
