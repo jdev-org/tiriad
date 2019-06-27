@@ -369,12 +369,9 @@ export default {
     destroyLayer(e) {
       let isBtn = e.target.type == "button" ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
-      // remove layer from file system
-      let props = this.getLayerById(layerId).getProperties();
-      if(props['name'] && props.source && props.source.features) {
-        let name = this.getLayerById(layerId).getProperties()['name'];
-        this.removeFile(name);
-      }      
+      // remove layer from file system      
+      let name = this.getLayerById(layerId).getProperties()['name'];
+      this.removeFile(name);
       // remove layer
       this.removeLayerById(layerId);
       // remove directly layer into store. VueJs bind this action into toc and remove layer container automaticaly.
