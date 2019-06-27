@@ -129,7 +129,7 @@ export default {
      * Get layers from file system
      * TODO : finish and test
      */
-    initMapLayers(map) {
+    initMapLayers() {
       let app = this;
       const req = new XMLHttpRequest();
       req.onreadystatechange = function() {
@@ -145,7 +145,7 @@ export default {
               visible: true,
             }
             let newLayer = app.createLayer(layer);
-            app.$store.state.map.addLayer(newLayer);      
+            app.$store.state.map.addLayer(newLayer);
           });
         }
       };          
@@ -487,7 +487,8 @@ export default {
           formatFactory = new KML();
           break;
         case 'GEOJSON':
-          formatFactory = new GeoJSON();
+          // force 3857 projection by default
+          formatFactory = new GeoJSON({"dataProjection":"EPSG:3857"});
           break;
         case 'TILE':
           formatFactory = new TileLayer();
