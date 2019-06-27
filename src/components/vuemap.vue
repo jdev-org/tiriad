@@ -57,7 +57,6 @@ import Geolocation from 'ol/Geolocation';
 import { transform } from 'ol/proj';
 import { DragAndDrop } from 'ol/interaction';
 import {GPX, GeoJSON, IGC, KML, TopoJSON} from 'ol/format';
-import axios from 'axios';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -131,15 +130,27 @@ export default {
      * TODO : finish and test
      */
     initMapLayers(map) {
-      let app = this;    
-
-      let request = new XMLHttpRequest();
-      let requestBody = new FormData();      
-      request.onreadystatechange = function() {        
-        console.log(request);
-      }
-      request.open("POST", "https://jdev.fr/tiriad/php/getLayers.php", false);
-      request.send(requestBody);
+      let app = this;
+      const req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if(req.status === 200 && req.readyState === 4 && req.responseText) {              
+          req.responseText.forEach(function(file) {
+            const rg = new RegExp("[^.]+");
+            const name = file.name.match(rg)[0];
+            let layer = {
+              id: app.getRandomId(),
+              format: 'GEOJSON',
+              url: file.path,
+              name: name,
+              visible: true,
+            }
+            let newLayer = app.createLayer(layer);
+            map.addLayer(newLayer);      
+          });
+        }
+      };          
+      req.open('POST', 'https://jdev.fr/tiriad/php/getLayers.php', true);          
+      req.send();
     },
     /**
      * Overlay content elements
@@ -557,32 +568,8 @@ export default {
         if(this.allowDragAndDropMap){
           this.addDragAndDropInteraction(false);
         }
-
         // read files from data/layers
-        function getFile() {
-          let app = this;
-          const req = new XMLHttpRequest();
-          req.onreadystatechange = function(event) {
-            if(req.status === 200 && req.readyState === 4 && req.responseText) {              
-              req.responseText.forEach(function(file) {
-                const rg = new RegExp("[^.]+");
-                const name = file.name.match(rg)[0];
-                let layer = {
-                  id: app.getRandomId(),
-                  format: 'GEOJSON',
-                  url: file.path,
-                  name: name,
-                  visible: true,
-                }
-                let newLayer = app.createLayer(layer);
-                map.addLayer(newLayer);      
-              });
-            }
-          };          
-          req.open('POST', 'https://jdev.fr/tiriad/php/getLayers.php', true);          
-          req.send();
-        }
-        getFile();
+        this.initMapLayers();
       }
     },
     /**

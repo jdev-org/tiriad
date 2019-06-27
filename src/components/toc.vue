@@ -426,7 +426,6 @@ export default {
      * TODO : add loader
      */
     saveFile(geojson, fileName) {
-      let app = this;
       let requestBody = new FormData();      
       fileName += ".json";
       fileName = fileName.replace(/é/g, 'e');
@@ -443,7 +442,6 @@ export default {
      * @param {String} - layer name is the file name with json extension
      */
     removeFile(layerName) {
-      let app = this;
       let requestBody = new FormData();
       let fileName = layerName + ".json";
       requestBody.append("filename", fileName.replace(' ','_'));
