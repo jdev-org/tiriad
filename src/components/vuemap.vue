@@ -69,7 +69,8 @@ export default {
     popup
   },
   props: {    
-    allowDragAndDropMap: Boolean
+    allowDragAndDropMap: Boolean,
+    displayCluster: Boolean
   },  
   data() {
     return {
@@ -101,24 +102,6 @@ export default {
         visible: true,
         url: './data/kml/departements_4326.kml',
         format: 'KML'
-      },{
-        id: this.getRandomId(),
-        name: 'Point de distribution',
-        format: 'KML',
-        url: './data/kml/points_distribution.kml',
-        visible: true,
-        style: this.createDistribClusterStyle(),
-        cluster: true,
-        distance: 20
-      },{
-        id: this.getRandomId(),
-        name: 'Clients',
-        format: 'GEOJSON',
-        url: './data/geojson/clients_4326.geojson',
-        visible: true,
-        style: this.createClientClusterStyle(),
-        cluster: true,
-        distance: 20
       }],
       geolocCoordinates:{},
       popupCount: 0
