@@ -432,12 +432,9 @@ export default {
       fileName = fileName.replace(/é/g, 'e');
       fileName = fileName.replace(/ /g, '_');
       requestBody.append("filename", fileName);      
-      requestBody.append("content", "geojson");
+      requestBody.append("content", geojson);
 
       let request = new XMLHttpRequest();
-      request.onreadystatechange = function(event) {
-        console.log(request);
-      };      
       request.open("POST", "https://jdev.fr/tiriad/php/data.php");
       request.send(requestBody);
     },

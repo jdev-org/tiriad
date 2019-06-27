@@ -560,13 +560,25 @@ export default {
 
         // read files from data/layers
         function getFile() {
+          app = this;
           const req = new XMLHttpRequest();
           req.onreadystatechange = function(event) {
-            if(req.status === 200 && req.readyState === 4) {
-              console.log(req);
-              console.log(req.responseText);
+            if(req.status === 200 && req.readyState === 4 && req.responseText) {              
+              req.responseText.forEach(function(file) {
+                const rg = new RegExp("[^.]+");
+                const name = file.name.match(rg)[0];
+                let layer = {
+                  id: app.getRandomId(),
+                  format: 'GEOJSON',
+                  url: file.path,
+                  name: name,
+                  visible: true,
+                }
+                let newLayer = app.createLayer(layer);
+                map.addLayer(newLayer);      
+              });
             }
-          };
+          };          
           req.open('POST', 'https://jdev.fr/tiriad/php/getLayers.php', true);          
           req.send();
         }
