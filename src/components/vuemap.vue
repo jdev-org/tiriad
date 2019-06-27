@@ -565,6 +565,7 @@ export default {
             if(req.status === 200 && req.readyState === 4) {
               console.log(req);
               console.log(req.responseText);
+            }
           };
           req.open('POST', 'https://jdev.fr/tiriad/php/getLayers.php', true);          
           req.send();
