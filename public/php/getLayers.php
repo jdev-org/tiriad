@@ -1,3 +1,4 @@
+
 <?php
 $dir = "../data/layers";
 $publicPath = "./data/layers";
@@ -14,7 +15,7 @@ if(is_dir($dir)){
                     // add files info to array
                     $layers[] = array(
                         'name' => $file,
-                        'path' => $publicPath,
+                        'path' => $publicPath. DIRECTORY_SEPARATOR .$file
                         //'content' => file_get_contents($path)
                     );
                 }
