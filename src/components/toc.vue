@@ -542,19 +542,15 @@ export default {
       let app = this;
       // create style
       function featureStyle(format){
-        return function(feature) {        
-          let val = feature.get('Code_Cat�gorie');
-          let icon, color;          
+        return function(feature) {
+          let props = feature.get()
+          let val = feature.get('Code_Cat�gorie') ? feature.get('Code_Cat�gorie') : feature.get('styleUrl');
+          let icon;
+          let color = 'red';
           let path = './lib/icons/jdev/';
-          switch(format) {
-            case "KML":
-              color = 'orange';
-              break;
-            case "CSV":
-              color = 'red';
-              break;
-            default:
-              break;
+          if(format === "KML") {
+            color = 'orange';
+            val = val.indexOf('icon-1502') < 0 ? 'DET' : 'CHR';
           }
           switch (val) {
             case 'DET':
@@ -564,7 +560,7 @@ export default {
               icon = 'restaurant';
               break;
             case 'ASS':
-              icon = 'other';
+              icon = 'embassy';
               break;
             default:
               icon = 'other';
@@ -572,7 +568,7 @@ export default {
           let style =  new Style({
             image: new Icon({
               src: path + icon + '-' + color + '.svg',
-              scale: 1
+              scale: 0.8
             })
           });
           feature.setStyle(style);
@@ -608,7 +604,7 @@ export default {
       if (existLyr) {
         let id = existLyr.getProperties().id;
         this.removeLayerById(id);
-        this.$store.commit("removeTocLayer", id);
+        this.$store.commit('removeTocLayer', id);
       }
       // add to map
       this.$store.state.map.addLayer(vectorLayer);
@@ -617,33 +613,42 @@ export default {
      * Search and remove layer by name
      */
     removeLayer(layerName) {
-      this.$store.commit("removeLayer", layerName);
+      this.$store.commit('removeLayer', layerName);
     },
     /**
      * Read kml file
      * TODO : display features to the map
      */
     readKml(file,e) {
-      // file name      
-      /*const rg = new RegExp("[^.]+");
-      const name = file.name.match(rg)[0];
-      let content = "";
-      let kmlFeatures = "";
-      this.removeLayer(name);*/
+      // file name
+      let content = '';
+      let kmlFeatures = '';
+      const rg = new RegExp('[^.]+');
+      let name = file.name.match(rg)[0];
+      name = name.replace(/ /g, '_');
+      // remove layer if aldready exist
+      let existLyr = this.getLayerByName(name);
+      if (existLyr) {
+        let id = existLyr.getProperties().id;
+        this.removeLayerById(id);
+        this.$store.commit('removeTocLayer', id);
+      }      
       let kmlString = e.target.result;
       let features = new KML().readFeatures(kmlString);
+      let geojsonObject = (new GeoJSON).writeFeaturesObject(features);
+      this.displayJson(geojsonObject, 'EPSG:4326',name);
       return features;
     },
     /*
      * read json file
      */
     readJson(file, e) {
-      const rg = new RegExp("[^.]+");
+      const rg = new RegExp('[^.]+');
       const name = file.name.match(rg)[0];
-      let content = "";
-      let jsonFeatures = "";
+      let content = '';
+      let jsonFeatures = '';
       this.removeLayer(name);
-      if (typeof e.target.result === "string") {
+      if (typeof e.target.result === 'string') {
         content = JSON.stringify(e.target.result);
         const v = JSON.parse(content);
         jsonFeatures = JSON.parse(v);
@@ -659,17 +664,17 @@ export default {
      */
     readUploadFile() {
       const app = this;
-      this.jsonLayerName = "";
-      this.jsonFeatures = "";
-      this.content = "";
+      this.jsonLayerName = '';
+      this.jsonFeatures = '';
+      this.content = '';
       if (this.dropFiles.length > 0) {
         // fire read file
         const file = this.dropFiles[this.dropFiles.length - 1];
         this.readFile(file, e => {
-          if (file.name.indexOf("json") > -1) {
+          if (file.name.indexOf('json') > -1) {
             this.$store.commit('setUploadFormat', 'GEOJSON');
             app.readJson(file, e);            
-          } else if (file.name.indexOf("kml") > -1) {
+          } else if (file.name.indexOf('kml') > -1) {
             this.$store.commit('setUploadFormat', 'KML');
             app.readKml(file, e);
           } else if (app.geocodeData) {
