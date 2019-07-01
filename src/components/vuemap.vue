@@ -309,7 +309,6 @@ export default {
      * Manage TOC visibility
      */
     displayToc() {
-      // this.tocIsVisible = this.tocIsVisible ? false : true;
       if (this.$store.state.displayToc === '') {
         this.$store.commit('setDisplayToc', 'none');
       } else {
@@ -422,16 +421,12 @@ export default {
         layer.setStyle(params.style)        
       }
       let name = params.name ? params.name : '';
-      console.log('name');
-      console.log(name);
       let id = params.id ? params.id : '';
-      console.log('id');
-      console.log(name);
       layer.setProperties({
         'name': name.replace(/_/g, ' '),
         'id': id
       });
-      layer.setVisible(params.visible);
+      layer.setVisible(params.visible ? params.visible : true);
       return layer;
     },
     /**
