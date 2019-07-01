@@ -20,7 +20,7 @@ export const store = new Vuex.Store({
           let icon;
           let color = 'red';
           let path = './lib/icons/jdev/';
-          if(format === 'KML') {
+          if(format === 'KML' || val.indexOf('icon') >- 1) {
             color = 'orange';
             val = val.indexOf('icon-1502') < 0 ? 'DET' : 'CHR';
           }
