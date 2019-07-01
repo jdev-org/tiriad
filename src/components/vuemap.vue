@@ -460,7 +460,6 @@ export default {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
         });        
-        //this.initMapLayers(map);
         let popupInfo = this.createOverlay();
         this.addClickInteraction(popupInfo);
         // add drag&drop interaction
