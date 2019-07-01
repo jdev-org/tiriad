@@ -418,7 +418,7 @@ export default {
       let layer = new VectorLayer({
         source: source
       });
-      if(params.style){        
+      if(params.style){
         layer.setStyle(params.style)
       }
       let name = params.name ? params.name : '';

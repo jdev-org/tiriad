@@ -1,6 +1,7 @@
 /* eslint-disable */
 import Vue from 'vue';
 import Vuex from 'vuex';
+import {Style, Icon} from 'ol/style';
 
 Vue.use(Vuex);
 
@@ -13,48 +14,36 @@ export const store = new Vuex.Store({
     tocLayers:[],
     uploadFormat: null,
     style:{
-      clientCluster: function() {
-        let cache = {};
+      featuresStyle: function(format) {
         return function(feature) {
-          const size = feature.get('features').length;
-          let style = cache[size];
-          const sizeRules = function(size) {
-            if (size === 1) {
-              return 10;
-            }
-            if (size > 1 && size < 16) {
-              return 15;
-            }
-            if (size > 15 && size < 31) {
-              return 20;
-            }
-            if (size > 30 && size < 40) {
-              return 25;
-            }
-            return 30;
-          };
-  
-          if (!style) {
-            if (size > 1) {
-              style = createStyle({
-                imageRadius: sizeRules(size), // default 10,
-                strokeColor: '#fff',
-                fillColor: 'rgba(234, 49, 8, 1)',
-                text: size.toString(),
-                textFillColor: '#fff',
-                opacity: 0.5
-              });
-            } else {
-              style = new Style({
-                image: new Icon({
-                  src: './img/star-orange-red-gmap.png',
-                  scale: 0.4
-                })
-              });
-            }
-            cache[size] = style;
+          let val = feature.get('Code_Cat�gorie') ? feature.get('Code_Cat�gorie') : feature.get('styleUrl');
+          let icon;
+          let color = 'red';
+          let path = './lib/icons/jdev/';
+          if(format === 'KML') {
+            color = 'orange';
+            val = val.indexOf('icon-1502') < 0 ? 'DET' : 'CHR';
           }
-          return style;
+          switch (val) {
+            case 'DET':
+              icon = 'store';
+              break;
+            case 'CHR':
+              icon = 'restaurant';
+              break;
+            case 'ASS':
+              icon = 'embassy';
+              break;
+            default:
+              icon = 'other';
+          };
+          let style =  new Style({
+            image: new Icon({
+              src: path + icon + '-' + color + '.svg',
+              scale: 0.8
+            })
+          });
+          feature.setStyle(style);
         };
       }
     }

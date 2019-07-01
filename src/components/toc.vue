@@ -540,40 +540,9 @@ export default {
      */
     displayJson(geojsonObject, srs, layerName) {
       let app = this;
-      // create style
-      function featureStyle(format){
-        return function(feature) {
-          let val = feature.get('Code_Cat�gorie') ? feature.get('Code_Cat�gorie') : feature.get('styleUrl');
-          let icon;
-          let color = 'red';
-          let path = './lib/icons/jdev/';
-          if(format === 'KML') {
-            color = 'orange';
-            val = val.indexOf('icon-1502') < 0 ? 'DET' : 'CHR';
-          }
-          switch (val) {
-            case 'DET':
-              icon = 'store';
-              break;
-            case 'CHR':
-              icon = 'restaurant';
-              break;
-            case 'ASS':
-              icon = 'embassy';
-              break;
-            default:
-              icon = 'other';
-          }
-          let style =  new Style({
-            image: new Icon({
-              src: path + icon + '-' + color + '.svg',
-              scale: 0.8
-            })
-          });
-          feature.setStyle(style);
-        }
-      }
-      let clientStyle = featureStyle(app.$store.state.uploadFormat);
+      // create style from store styles
+      let format = app.$store.state.uploadFormat;      
+      let clientStyle = app.$store.state.style.featuresStyle(format);
       // get features from geojson object
       let features = new GeoJSON().readFeatures(geojsonObject);
       // reproject features
