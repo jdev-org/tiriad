@@ -116,12 +116,13 @@ export default {
           JSON.parse(req.responseText).forEach(function(file) {
             const rg = new RegExp('[^.]+');
             const name = file.name.match(rg)[0];
+            let format = "GEOJSON";
             let layer = {
               id: app.getRandomId(),
-              format: 'GEOJSON',
+              format: format,
               url: file.path,
               name: name,
-              style: app.$store.getters.getStyle.featuresStyle(params.format)
+              style: app.$store.state.style.featuresStyle(format)
             }
             let newLayer = app.createLayer(layer);            
             app.$store.state.map.addLayer(newLayer);
