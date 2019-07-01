@@ -351,7 +351,7 @@ export default {
     readFile(blob, callback) {
       const reader = new FileReader();
       reader.onload = callback;
-      reader.readAsText(blob);
+      reader.readAsText(blob,'ISO-8859-1');
     },
     /**
      * save file new
