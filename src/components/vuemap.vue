@@ -422,7 +422,11 @@ export default {
         layer.setStyle(params.style)        
       }
       let name = params.name ? params.name : '';
+      console.log('name');
+      console.log(name);
       let id = params.id ? params.id : '';
+      console.log('id');
+      console.log(name);
       layer.setProperties({
         'name': name.replace(/_/g, ' '),
         'id': id

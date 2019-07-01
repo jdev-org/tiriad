@@ -16,7 +16,7 @@ export const store = new Vuex.Store({
       clientCluster: function() {
         let cache = {};
         return function(feature) {
-          const size = feature.get("features").length;
+          const size = feature.get('features').length;
           let style = cache[size];
           const sizeRules = function(size) {
             if (size === 1) {
@@ -38,16 +38,16 @@ export const store = new Vuex.Store({
             if (size > 1) {
               style = createStyle({
                 imageRadius: sizeRules(size), // default 10,
-                strokeColor: "#fff",
-                fillColor: "rgba(234, 49, 8, 1)",
+                strokeColor: '#fff',
+                fillColor: 'rgba(234, 49, 8, 1)',
                 text: size.toString(),
-                textFillColor: "#fff",
+                textFillColor: '#fff',
                 opacity: 0.5
               });
             } else {
               style = new Style({
                 image: new Icon({
-                  src: "./img/star-orange-red-gmap.png",
+                  src: './img/star-orange-red-gmap.png',
                   scale: 0.4
                 })
               });
@@ -105,7 +105,7 @@ export const store = new Vuex.Store({
      */
     removeLayerById(state, id) {      
       state.map.getLayers().array_.forEach(function(layer) {
-        if (id === layer.get("id")) {
+        if (id === layer.get('id')) {
           state.map.removeLayer(layer);
           store.commit('removeTocLayer',id);
         }
@@ -119,7 +119,7 @@ export const store = new Vuex.Store({
     removeLayerByName(state, name) {
       let store = this;      
       state.map.getLayers().array_.forEach(function(layer) {
-        if (name === layer.get("name")) {
+        if (name === layer.get('name')) {
           let id = layer.get('id');
           state.map.removeLayer(layer);
           store.commit('removeTocLayer',id);
@@ -150,8 +150,7 @@ export const store = new Vuex.Store({
     setLayerToToc(state, layer) {
       // manage case where layer is not to insert in TOC by 'addToToc' property
       let addLayer = layer.getProperties() && layer.getProperties().addToToc === false ? false : true;
-      if(addLayer) {
-        
+      if(addLayer) {        
         state.tocLayers.unshift(layer);
       }
     },
@@ -173,7 +172,7 @@ export const store = new Vuex.Store({
       let layers = state.map.getLayers().array_;
       if(layers.length > 0){
         layers.forEach(function(layer) {
-          if(layer.type == "TILE" || (layer.getSource() && layer.getSource().getFeatures() && layer.getSource().getFeatures().length > 0)) {
+          if(layer.type == 'TILE' || (layer.getSource() && layer.getSource().getFeatures() && layer.getSource().getFeatures().length > 0)) {
             state.tocLayers.unshift(layer);            
           }
         });
