@@ -120,9 +120,10 @@ export default {
               id: app.getRandomId(),
               format: 'GEOJSON',
               url: file.path,
-              name: name
+              name: name,
+              style: this.$store.state.style.featuresStyle(params.format)
             }
-            let newLayer = app.createLayer(layer);
+            let newLayer = app.createLayer(layer);            
             app.$store.state.map.addLayer(newLayer);
           });
         }
@@ -418,7 +419,7 @@ export default {
         source: source
       });
       if(params.style){        
-        layer.setStyle(params.style)        
+        layer.setStyle(params.style)
       }
       let name = params.name ? params.name : '';
       let id = params.id ? params.id : '';
