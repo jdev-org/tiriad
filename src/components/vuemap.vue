@@ -184,25 +184,27 @@ export default {
           let coordinates = JSON.parse(JSON.stringify(position));
           // reproject coordinates for the ban API
           let newCoord = transform([coordinates[0], coordinates[1]], 'EPSG:3857', 'EPSG:4326');
-          // create request
-          let params = 'lon='+newCoord[0]+'&lat='+newCoord[1];
-          const http = new XMLHttpRequest();
-          http.open('GET', 'https://api-adresse.data.gouv.fr/reverse/?' + params, true);
-          // read request response
-          http.onreadystatechange = function() {
-            // SUCCESS
-            if(http.status == 200 && http.responseText && JSON.parse(http.responseText).features.length > 0) {
-              let props = JSON.parse(http.responseText).features[0].properties;
-              textContent += controlText(textContent, '<strong>Adresse: </strong>' + props.name);
-              textContent += controlText(textContent, '<strong>Code postal: </strong>' + props.postcode);
-              textContent += controlText(textContent, '<strong>Ville: </strong>' + props.city);              
-              addToPopover(textContent.replace('name', 'Nom'));
-            } else {
-              // FAIL
-              addToPopover(textContent);
-            }
-          };
-          http.send();
+          if(!isNaN(newCoord[0]) && !isNaN(newCoord[1])){
+            // create request
+            let params = 'lon='+newCoord[0]+'&lat='+newCoord[1];
+            const http = new XMLHttpRequest();
+            http.open('GET', 'https://api-adresse.data.gouv.fr/reverse/?' + params, true);
+            // read request response
+            http.onreadystatechange = function() {
+              // SUCCESS
+              if(http.status == 200 && http.responseText && JSON.parse(http.responseText).features.length > 0) {
+                let props = JSON.parse(http.responseText).features[0].properties;
+                textContent += controlText(textContent, '<strong>Adresse: </strong>' + props.name);
+                textContent += controlText(textContent, '<strong>Code postal: </strong>' + props.postcode);
+                textContent += controlText(textContent, '<strong>Ville: </strong>' + props.city);              
+                addToPopover(textContent.replace('name', 'Nom'));
+              } else {
+                // FAIL
+                addToPopover(textContent);
+              }
+            };
+            http.send();            
+          }
         } else {
           textContent = textContent.replace('Code_Categorie','Type');
           textContent = textContent.replace('Code_Postal','Code postal');          
