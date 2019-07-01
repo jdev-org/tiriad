@@ -35,7 +35,7 @@ export default {
       // animation or geopin
       showResultAnimation: false,
       // drag&drop from file to the map directly to display data
-      activeDD: false
+      activeDD: false,
     };
   },
   method: { // pass methods here
