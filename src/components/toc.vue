@@ -165,8 +165,6 @@
 import Papa from 'papaparse';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
-import Style from 'ol/style/Style';
-import Icon from 'ol/style/Icon';
 import {GeoJSON, KML} from 'ol/format';
 // bootstrap tooltips
 $(document).ready(() => {
