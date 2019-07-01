@@ -426,6 +426,7 @@ export default {
         'name': name.replace(/_/g, ' '),
         'id': id
       });
+      // set visibility if defined
       layer.setVisible(params.visible ? params.visible : true);
       return layer;
     },
