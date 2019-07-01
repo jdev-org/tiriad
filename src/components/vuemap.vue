@@ -121,7 +121,7 @@ export default {
               format: 'GEOJSON',
               url: file.path,
               name: name,
-              style: this.$store.state.style.featuresStyle(params.format)
+              style: app.$store.state.style.featuresStyle(params.format)
             }
             let newLayer = app.createLayer(layer);            
             app.$store.state.map.addLayer(newLayer);
