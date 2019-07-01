@@ -43,12 +43,8 @@
 /* eslint-disable no-undef */
 import OverviewMap from 'ol/control/OverviewMap';
 import { kebabCase } from 'lodash';
-import { createStyle } from 'vuelayers/lib/ol-ext';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
-import Style from 'ol/style/Style';
-import Icon from 'ol/style/Icon';
-import Cluster from 'ol/source/Cluster'
 import TileLayer from 'ol/layer/Tile'
 import OSM from 'ol/source/OSM'
 import Overlay from 'ol/Overlay';
@@ -63,14 +59,14 @@ $(document).ready(() => {
   $('[data-toggle="tooltip"]').tooltip();
 });
 
+
 export default {
   name: 'vuemap',
   components: {
     popup
   },
   props: {    
-    allowDragAndDropMap: Boolean,
-    displayCluster: Boolean
+    allowDragAndDropMap: Boolean
   },  
   data() {
     return {
@@ -101,7 +97,7 @@ export default {
         name: 'Départements',
         visible: true,
         url: './data/kml/departements_4326.kml',
-        format: 'KML'
+        format: 'KML',
       }],
       geolocCoordinates:{},
       popupCount: 0
@@ -124,8 +120,7 @@ export default {
               id: app.getRandomId(),
               format: 'GEOJSON',
               url: file.path,
-              name: name,
-              visible: true,
+              name: name
             }
             let newLayer = app.createLayer(layer);
             app.$store.state.map.addLayer(newLayer);
@@ -378,87 +373,7 @@ export default {
         this.$store.commit('setMap', olMap);
       }
     },
-    createDistribClusterStyle() {
-      let cache = {};
-      return function(feature){
-        const size = feature.get('features').length;
-        let style = cache[size];
-        const sizeRules = function (size) {
-          if (size === 1) {
-            return 10;
-          } if (size > 1 && size < 16) {
-            return 15;
-          } if (size > 15 && size < 31) {
-            return 20;
-          } if (size > 30 && size < 40) {
-            return 25;
-          }
-          return 30;
-        };        
-        if (!style) {
-          if (size > 1) {
-            style = createStyle({
-              imageRadius: sizeRules(size), // default 10,
-              strokeColor: '#fff',
-              fillColor: 'rgba(234, 124, 8, 1)',
-              text: size.toString(),
-              textFillColor: '#fff',
-              opacity: 0.5,
-            });
-          } else {
-            style = new Style({
-              image: new Icon({
-                src: './img/star-orange-gmap.png',
-                scale: 0.4
-            }),
-          });
-          }
-          cache[size] = style;
-        }
-        return style;
-      }
-    },
-    createClientClusterStyle() {
-      let cache = {};
-      return function(feature){
-        const size = feature.get('features').length;
-        let style = cache[size];
-        const sizeRules = function (size) {
-          if (size === 1) {
-            return 10;
-          } if (size > 1 && size < 16) {
-            return 15;
-          } if (size > 15 && size < 31) {
-            return 20;
-          } if (size > 30 && size < 40) {
-            return 25;
-          }
-          return 30;
-        };  
-        
-        if (!style) {
-          if (size > 1) {
-            style = createStyle({
-              imageRadius: sizeRules(size), // default 10,
-              strokeColor: '#fff',
-              fillColor: 'rgba(234, 49, 8, 1)',
-              text: size.toString(),
-              textFillColor: '#fff',
-              opacity: 0.5,
-            });
-          } else {
-            style = new Style({
-              image: new Icon({
-                src: './img/star-orange-red-gmap.png',
-                scale: 0.4
-            }),
-          });
-          }
-          cache[size] = style;
-        }
-        return style;
-      }
-    },
+
     /**
      * Create layer from given properties
      */
