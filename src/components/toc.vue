@@ -542,7 +542,6 @@ export default {
       let app = this;
       // create style
       function featureStyle(format){
-        format = "KML";
         return function(feature) {        
           let val = feature.get('Code_Cat�gorie');
           let icon, color;          
