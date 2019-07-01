@@ -1,0 +1,17 @@
+<svg width="580" height="400" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+
+ <g>
+  <title>background</title>
+  <rect fill="#fff" id="canvas_background" height="18" width="18" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <g id="svg_15">
+   <circle stroke-width="2" stroke="#bf0000" fill="#ffffff" transform="matrix(7.111111534966369,0,0,7.111111534966369,0,0) " id="svg_14" r="24" cy="28.124999" cx="40.781248"/>
+  </g>
+  <g stroke="null" id="svg_25">
+   <path fill="#bf0000" stroke="null" id="svg_24" d="m189.666659,89.333329l27.422225,221.238593c0.856945,6.899628 6.850659,13.809049 13.716009,13.809049l123.390218,0c6.860453,0 12.863962,-6.909421 13.706216,-13.809049l27.432019,-221.238593l-205.666687,0zm30.850003,27.647479l143.961784,0l-6.424636,55.309648l-131.107616,0l-6.429532,-55.309648z"/>
+  </g>
+ </g>
+</svg>

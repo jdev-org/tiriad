@@ -57,21 +57,7 @@
                   >
                     <i class="fas fa-glasses" activate="false"></i>
                   </button>
-                  <!--div-- class="dropdown-menu dropdown-menu-right">
-                    <button class="dropdown-item" type="button">Infos</button>
-                    <button class="dropdown-item" type="button">Style</button>
-                    <button class="dropdown-item" type="button">Vue 3D</button>
-                    <button class="dropdown-item" type="button">Sélection</button>                    
-                    <button class="dropdown-item" type="button">Table attributaire</button>
-                  </!--div-->
                   <p class="pl-2 m-0">{{layer.getProperties().name}}</p>
-                  <!--button
-                    type="button"
-                    class="btn btn-sm dropdown-toggle"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"                    
-                  ></button-->
                 </div>
               </li>
             </ul>
@@ -179,10 +165,8 @@
 import Papa from "papaparse";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
-import { createStyle } from "vuelayers/lib/ol-ext";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
-import Cluster from "ol/source/Cluster";
 import {GeoJSON, KML} from 'ol/format';
 // bootstrap tooltips
 $(document).ready(() => {
@@ -227,53 +211,6 @@ export default {
           this.saveFile(json, name);
         }
       }
-    },
-    /**
-     * Create cluster style
-     */    
-    createClientClusterStyle() {
-      let cache = {};
-      return function(feature) {
-        const size = feature.get("features").length;
-        let style = cache[size];
-        const sizeRules = function(size) {
-          if (size === 1) {
-            return 10;
-          }
-          if (size > 1 && size < 16) {
-            return 15;
-          }
-          if (size > 15 && size < 31) {
-            return 20;
-          }
-          if (size > 30 && size < 40) {
-            return 25;
-          }
-          return 30;
-        };
-
-        if (!style) {
-          if (size > 1) {
-            style = createStyle({
-              imageRadius: sizeRules(size), // default 10,
-              strokeColor: "#fff",
-              fillColor: "rgba(234, 49, 8, 1)",
-              text: size.toString(),
-              textFillColor: "#fff",
-              opacity: 0.5
-            });
-          } else {
-            style = new Style({
-              image: new Icon({
-                src: "./img/star-orange-red-gmap.png",
-                scale: 0.4
-              })
-            });
-          }
-          cache[size] = style;
-        }
-        return style;
-      };
     },
     /**
      * Zoom to a given layer extent
@@ -558,8 +495,7 @@ export default {
       this.displayJson(
         geojsonLayer,
         geojsonLayer.crs.properties.name,
-        fileName,
-        true
+        fileName
       );
     },
     /**
@@ -602,8 +538,48 @@ export default {
     /**
      * From json object, reproject features and add them to map as vector layer
      */
-    displayJson(geojsonObject, srs, layerName, isCsv) {
+    displayJson(geojsonObject, srs, layerName) {
       let app = this;
+      // create style
+      function featureStyle(format){
+        format = "KML";
+        return function(feature) {        
+          let val = feature.get('Code_Cat�gorie');
+          let icon, color;          
+          let path = './lib/icons/jdev/';
+          switch(format) {
+            case "KML":
+              color = 'orange';
+              break;
+            case "CSV":
+              color = 'red';
+              break;
+            default:
+              break;
+          }
+          switch (val) {
+            case 'DET':
+              icon = 'store';
+              break;
+            case 'CHR':
+              icon = 'restaurant';
+              break;
+            case 'ASS':
+              icon = 'other';
+              break;
+            default:
+              icon = 'other';
+          }
+          let style =  new Style({
+            image: new Icon({
+              src: path + icon + '-' + color + '.svg',
+              scale: 1
+            })
+          });
+          feature.setStyle(style);
+        }
+      }
+      let clientStyle = featureStyle(app.$store.state.uploadFormat);
       // get features from geojson object
       let features = new GeoJSON().readFeatures(geojsonObject);
       // reproject features
@@ -620,21 +596,14 @@ export default {
       let vectorSource = new VectorSource({
         features
       });
-      // create clustered vector
-      if (isCsv) {
-        vectorSource = new Cluster({
-          source: vectorSource,
-          distance: 50
-        });
-      }
+      // create layer
       const vectorLayer = new VectorLayer({
         source: vectorSource,
         name: layerName,
         addToToc: true,
         id: layerName,
-        style: app.createClientClusterStyle()
+        style: clientStyle
       });
-
       // remove layer if already exist
       let existLyr = this.getLayerByName(layerName);
       if (existLyr) {
@@ -679,7 +648,7 @@ export default {
         content = JSON.stringify(e.target.result);
         const v = JSON.parse(content);
         jsonFeatures = JSON.parse(v);
-        this.displayJson(jsonFeatures, this.uploadSrs, name, false);
+        this.displayJson(jsonFeatures, this.uploadSrs, name);
         this.displayGeocodPanel(
           false,
           "Le fichier n'est pas au format CSV, il n'a pas été géocodé."
@@ -699,12 +668,16 @@ export default {
         const file = this.dropFiles[this.dropFiles.length - 1];
         this.readFile(file, e => {
           if (file.name.indexOf("json") > -1) {
-            app.readJson(file, e);
+            this.$store.commit('setUploadFormat', 'GEOJSON');
+            app.readJson(file, e);            
           } else if (file.name.indexOf("kml") > -1) {
+            this.$store.commit('setUploadFormat', 'KML');
             app.readKml(file, e);
           } else if (app.geocodeData) {
+            this.$store.commit('setUploadFormat', 'CSV');
             app.csvToApi(e.target.result, file.name);
           } else {
+            this.$store.commit('setUploadFormat', 'CSV');
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }
         });

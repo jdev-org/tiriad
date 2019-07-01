@@ -1,0 +1,25 @@
+<svg width="47" height="47" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="49" width="49" y="-1" x="-1"/>
+  <g display="none" overflow="visible" y="0" x="0" height="100%" width="100%" id="canvasGrid">
+   <rect fill="url(#gridpattern)" stroke-width="0" y="0" x="0" height="100%" width="100%"/>
+  </g>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <path stroke="null" fill="#007fff" id="svg_4" d="m23.313686,2.331796c-6.941361,0 -12.568857,5.577221 -12.568857,12.456575c0,6.880192 12.568857,29.440453 12.568857,29.440453s12.568857,-22.560261 12.568857,-29.440453c0,-6.879354 -5.627496,-12.456575 -12.568857,-12.456575zm-0.041058,16.181985c-2.142571,0 -3.878749,-1.721933 -3.878749,-3.844394c0,-2.124137 1.736178,-3.845232 3.878749,-3.845232c2.144247,0 3.880425,1.721096 3.880425,3.845232c0,2.122461 -1.736178,3.844394 -3.880425,3.844394z"/>
+  <ellipse ry="10.257618" rx="10.257618" id="svg_11" cy="14.681846" cx="23.40355" stroke-width="null" fill="#ffffff"/>
+  <style transform="matrix(0.44089256278135736,0,0,0.44089256278135736,0,0) " type="text/css">
+   <![CDATA[
+	.st0{fill:#D1D1D1;}
+	.st1{fill:#454545;}
+]]>
+  </style>
+  <g fill="#007fff" stroke="null" id="svg_45">
+   <path fill="#007fff" stroke="null" id="svg_44" d="m17.300649,8.268177l1.607906,12.972353c0.050247,0.404561 0.401689,0.809695 0.80424,0.809695l7.235001,0c0.402264,0 0.75428,-0.405135 0.803666,-0.809695l1.60848,-12.972353l-12.059293,0zm1.808894,1.621113l8.441218,0l-0.376709,3.243088l-7.687512,0l-0.376996,-3.243088z"/>
+  </g>
+ </g>
+</svg>

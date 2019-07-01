@@ -11,9 +11,63 @@ export const store = new Vuex.Store({
     zoomAdress: 11,
     displayToc: 'none',
     tocLayers:[],
-    style:{}
+    uploadFormat: null,
+    style:{
+      clientCluster: function() {
+        let cache = {};
+        return function(feature) {
+          const size = feature.get("features").length;
+          let style = cache[size];
+          const sizeRules = function(size) {
+            if (size === 1) {
+              return 10;
+            }
+            if (size > 1 && size < 16) {
+              return 15;
+            }
+            if (size > 15 && size < 31) {
+              return 20;
+            }
+            if (size > 30 && size < 40) {
+              return 25;
+            }
+            return 30;
+          };
+  
+          if (!style) {
+            if (size > 1) {
+              style = createStyle({
+                imageRadius: sizeRules(size), // default 10,
+                strokeColor: "#fff",
+                fillColor: "rgba(234, 49, 8, 1)",
+                text: size.toString(),
+                textFillColor: "#fff",
+                opacity: 0.5
+              });
+            } else {
+              style = new Style({
+                image: new Icon({
+                  src: "./img/star-orange-red-gmap.png",
+                  scale: 0.4
+                })
+              });
+            }
+            cache[size] = style;
+          }
+          return style;
+        };
+      }
+    }
   },
   mutations: {
+    /**
+     * Set format for the last file upload
+     * @param {Object} state 
+     * @param {String} format
+     */
+    setUploadFormat(state, format) {
+      state.uploadFormat = format;
+    },
     /**
      * setMap is use to share map
      * @param {Object} state
@@ -141,6 +195,7 @@ export const store = new Vuex.Store({
     getZoomAdress: state => state.zoomAdress,
     getDisplayToc: state => state.displayToc,
     getTocLayers: state => state.tocLayers,
-    getStyle: state => state.style
+    getStyle: state => state.style,
+    getUploadFormat: state => state.uploadFormat
   },
 });
