@@ -162,11 +162,11 @@
 </template>
 <script>
 /* eslint-disable no-undef */
-import Papa from "papaparse";
-import VectorSource from "ol/source/Vector";
-import VectorLayer from "ol/layer/Vector";
-import Style from "ol/style/Style";
-import Icon from "ol/style/Icon";
+import Papa from 'papaparse';
+import VectorSource from 'ol/source/Vector';
+import VectorLayer from 'ol/layer/Vector';
+import Style from 'ol/style/Style';
+import Icon from 'ol/style/Icon';
 import {GeoJSON, KML} from 'ol/format';
 // bootstrap tooltips
 $(document).ready(() => {
@@ -174,22 +174,22 @@ $(document).ready(() => {
 });
 
 export default {
-  name: "toc",
+  name: 'toc',
   components: {},
   data() {
     return {
       dropFiles: [],
-      jsonLayerName: "",
-      jsonFeatures: "",
-      uploadSrs: "EPSG:3857",
+      jsonLayerName: '',
+      jsonFeatures: '',
+      uploadSrs: 'EPSG:3857',
       map: this.$store.state.map,
       layers: this.$store.state.tocLayers,
-      isGeocodage: "",
+      isGeocodage: '',
       geocodeData: true,
-      mapProjection: "EPSG:3857",
-      displayImportProj: "none",
+      mapProjection: 'EPSG:3857',
+      displayImportProj: 'none',
       checkboxChecked: false,
-      banReverseResult: ""
+      banReverseResult: ''
     };
   },
   methods: {
@@ -198,7 +198,7 @@ export default {
      */
     saveLayer(e) {
       let layer, source, name, layerId, json;
-      let isBtn = e.target.type == "button" ? true : false;
+      let isBtn = e.target.type == 'button' ? true : false;
       layerId = isBtn ? e.target.value : e.target.parentElement.value;
       if (layerId) {
         layer = this.getLayerById(layerId);
@@ -217,7 +217,7 @@ export default {
      * @param e - event
      */
     zoomToLayer(e) {
-      let isBtn = e.target.type == "button" ? true : false;
+      let isBtn = e.target.type == 'button' ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
       let map = this.$store.state.map;
       // remove li container
@@ -228,7 +228,7 @@ export default {
           map.getView().fit(extent, map.getSize());
         } else {
           // TODO : create v-if when button is create to hide zoom to layer action if not available.
-          alert("Cette action n'est pas disponible pour cet élément.");
+          alert('Cette action n\'est pas disponible pour cet élément.');
         }
       }
     },
@@ -239,11 +239,11 @@ export default {
 
     displayImportProjList(e) {
       if (e && this.displayImportProj) {
-        document.getElementById("srsForm").style.display =
-          e.target && e.target.checked ? "" : "none";
+        document.getElementById('srsForm').style.display =
+          e.target && e.target.checked ? '' : 'none';
       } else {
-        document.getElementById("geocodCheckbox").checked = false;
-        document.getElementById("srsForm").style.display = "none";
+        document.getElementById('geocodCheckbox').checked = false;
+        document.getElementById('srsForm').style.display = 'none';
       }
     },
     /**
@@ -252,14 +252,14 @@ export default {
      * @param msg - optionnal message to display into alert panel
      */
     displayGeocodPanel(e, msg) {
-      if (e && this.isGeocodage === "") {
+      if (e && this.isGeocodage === '') {
         // do not geocode data
         this.geocodeData = e.target && e.target.checked ? false : true;
-        this.isGeocodage = e.target && e.target.checked ? "none" : "";
+        this.isGeocodage = e.target && e.target.checked ? 'none' : '';
       } else {
         // geocode data
-        document.getElementById("geocodCheckbox").checked = false;
-        this.isGeocodage = "";
+        document.getElementById('geocodCheckbox').checked = false;
+        this.isGeocodage = '';
         this.geocodeData = true;
       }
       if (msg) {
@@ -279,7 +279,7 @@ export default {
       let findLayer;
       let layers = this.$store.state.map.getLayers().array_;
       layers.forEach(function(layer) {
-        if (name === layer.get("name")) {
+        if (name === layer.get('name')) {
           findLayer = layer;
         }
       });
@@ -293,7 +293,7 @@ export default {
       let findLayer;
       let layers = this.$store.state.map.getLayers().array_;
       layers.forEach(function(layer) {
-        if (id === layer.get("id")) {
+        if (id === layer.get('id')) {
           findLayer = layer;
         }
       });
@@ -304,7 +304,7 @@ export default {
      * @param e - event
      */
     destroyLayer(e) {
-      let isBtn = e.target.type == "button" ? true : false;
+      let isBtn = e.target.type == 'button' ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
       // remove layer from file system      
       let name = this.getLayerById(layerId).getProperties()['name'];
@@ -312,7 +312,7 @@ export default {
       // remove layer
       this.removeLayerById(layerId);
       // remove directly layer into store. VueJs bind this action into toc and remove layer container automaticaly.
-      this.$store.commit("removeTocLayer", layerId);
+      this.$store.commit('removeTocLayer', layerId);
     },
     /**
      * Use to manage layer visibility and associate icon
@@ -320,17 +320,17 @@ export default {
      */
     displayLayer(e) {
       // get icon element
-      let isBtn = e.target.type == "button" ? true : false;
+      let isBtn = e.target.type == 'button' ? true : false;
       let domEl = isBtn ? e.target.firstChild : e.target;
       // change layer visiblity
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
       if (layerId) {
         let layer = this.getLayerById(layerId);
         if (layer.getVisible()) {
-          domEl.className = "far fa-eye-slash";
+          domEl.className = 'far fa-eye-slash';
           layer.setVisible(false);
         } else {
-          domEl.className = "fas fa-eye";
+          domEl.className = 'fas fa-eye';
           layer.setVisible(true);
         }
       }
@@ -361,14 +361,14 @@ export default {
      */
     saveFile(geojson, fileName) {
       let requestBody = new FormData();      
-      fileName += ".json";
+      fileName += '.json';
       fileName = fileName.replace(/é/g, 'e');
       fileName = fileName.replace(/ /g, '_');
-      requestBody.append("filename", fileName);      
-      requestBody.append("content", geojson);
+      requestBody.append('filename', fileName);      
+      requestBody.append('content', geojson);
 
       let request = new XMLHttpRequest();
-      request.open("POST", "https://jdev.fr/tiriad/php/data.php");
+      request.open('POST', 'https://jdev.fr/tiriad/php/data.php');
       request.send(requestBody);
     },
     /**
@@ -377,10 +377,10 @@ export default {
      */
     removeFile(layerName) {
       let requestBody = new FormData();
-      let fileName = layerName + ".json";
-      requestBody.append("filename", fileName.replace(' ','_'));
+      let fileName = layerName + '.json';
+      requestBody.append('filename', fileName.replace(' ','_'));
       let request = new XMLHttpRequest();
-      request.open("POST", "https://jdev.fr/tiriad/php/removeFile.php");
+      request.open('POST', 'https://jdev.fr/tiriad/php/removeFile.php');
       request.send(requestBody);
     },    
     /**
@@ -394,27 +394,27 @@ export default {
         if (
           req.readyState === 4 &&
           req.status === 200 &&
-          req.responseText != ""
+          req.responseText != ''
         ) {
           // return layer from file
           return JSON.parse(req.responseText);
         }
       };
       let requestBody = new FormData();
-      requestBody.append("filename", fileName);
-      req.open("POST", "https://jdev.fr/tiriad/php/getData.php", false);
+      requestBody.append('filename', fileName);
+      req.open('POST', 'https://jdev.fr/tiriad/php/getData.php', false);
       req.send(requestBody);
     },
     /**
      * Transform csv as object to geojson
      */
     csvToJsonPoints(fileName, csvObject, crs) {
-      fileName = fileName.replace(".csv", "");
+      fileName = fileName.replace('.csv', '');
       // layer skeleton
       const geojsonLayer = {
-        type: "FeatureCollection",
+        type: 'FeatureCollection',
         crs: {
-          type: "name",
+          type: 'name',
           properties: {
             name: crs ? crs : this.uploadSrs // ex: EPSG:4326
           }
@@ -424,9 +424,9 @@ export default {
 
       // feature skeleton
       const feature = {
-        type: "Feature",
+        type: 'Feature',
         geometry: {
-          type: "Point",
+          type: 'Point',
           coordinates: []
         }
       };
@@ -438,22 +438,22 @@ export default {
       let x, y;
       colName.forEach(function(col) {
         switch (col.toLowerCase()) {
-          case "x":
+          case 'x':
             x = col;
             break;
-          case "lon":
+          case 'lon':
             x = col;
             break;
-          case "longitude":
+          case 'longitude':
             x = col;
             break;
-          case "y":
+          case 'y':
             y = col;
             break;
-          case "lat":
+          case 'lat':
             y = col;
             break;
-          case "latitude":
+          case 'latitude':
             y = col;
             break;
           default:
@@ -464,7 +464,7 @@ export default {
       csvObject.forEach((line) => {
         const properties = {};
         line.forEach((attribute, i) => {
-          const name = colName[i].replace(" ", "_");
+          const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
         });
 
@@ -480,8 +480,8 @@ export default {
           newFeature.properties = properties;
           let pX = properties[x];
           let pY = properties[y];
-          pX = pX ? pX.replace(",", ".") : "";
-          pY = pY ? pY.replace(",", ".") : "";
+          pX = pX ? pX.replace(',', '.') : '';
+          pY = pY ? pY.replace(',', '.') : '';
           pX = parseFloat(pX);
           pY = parseFloat(pY);
           newFeature.geometry.coordinates.push(pX);
@@ -490,7 +490,7 @@ export default {
           geojsonLayer.features.push(newFeature);
         }
       });
-      fileName = fileName.replace(" ", "");
+      fileName = fileName.replace(' ', '');
       // display layer to map
       this.displayJson(
         geojsonLayer,
@@ -504,24 +504,24 @@ export default {
     csvToApi(csvString, fileName) {
       const requestBody = new FormData();
       const app = this;
-      requestBody.append("delimiter", ";");
+      requestBody.append('delimiter', ';');
       requestBody.append(
-        "data",
-        new Blob([csvString], { type: "text/csv; charset=utf-8" }),
-        "upload.csv"
+        'data',
+        new Blob([csvString], { type: 'text/csv; charset=utf-8' }),
+        'upload.csv'
       );
-      requestBody.append("columns", "Adresse (1)");
-      requestBody.append("columns", "Code Postal");
-      requestBody.append("columns", "Ville");
-      fetch("https://api-adresse.data.gouv.fr/search/csv/", {
-        method: "POST",
+      requestBody.append('columns', 'Adresse (1)');
+      requestBody.append('columns', 'Code Postal');
+      requestBody.append('columns', 'Ville');
+      fetch('https://api-adresse.data.gouv.fr/search/csv/', {
+        method: 'POST',
         body: requestBody
       })
         .then(res => res.text())
         .then(text => {
           const csvParsed = Papa.parse(text);
-          fileName = fileName.replace(".csv", "");
-          app.csvToJsonPoints(fileName, csvParsed.data, "EPSG:4326");
+          fileName = fileName.replace('.csv', '');
+          app.csvToJsonPoints(fileName, csvParsed.data, 'EPSG:4326');
         });
     },
     /**
@@ -543,12 +543,11 @@ export default {
       // create style
       function featureStyle(format){
         return function(feature) {
-          let props = feature.get()
           let val = feature.get('Code_Cat�gorie') ? feature.get('Code_Cat�gorie') : feature.get('styleUrl');
           let icon;
           let color = 'red';
           let path = './lib/icons/jdev/';
-          if(format === "KML") {
+          if(format === 'KML') {
             color = 'orange';
             val = val.indexOf('icon-1502') < 0 ? 'DET' : 'CHR';
           }
@@ -621,23 +620,13 @@ export default {
      */
     readKml(file,e) {
       // file name
-      let content = '';
-      let kmlFeatures = '';
       const rg = new RegExp('[^.]+');
       let name = file.name.match(rg)[0];
-      name = name.replace(/ /g, '_');
       // remove layer if aldready exist
-      let existLyr = this.getLayerByName(name);
-      if (existLyr) {
-        let id = existLyr.getProperties().id;
-        this.removeLayerById(id);
-        this.$store.commit('removeTocLayer', id);
-      }      
       let kmlString = e.target.result;
       let features = new KML().readFeatures(kmlString);
       let geojsonObject = (new GeoJSON).writeFeaturesObject(features);
       this.displayJson(geojsonObject, 'EPSG:4326',name);
-      return features;
     },
     /*
      * read json file
@@ -655,7 +644,7 @@ export default {
         this.displayJson(jsonFeatures, this.uploadSrs, name);
         this.displayGeocodPanel(
           false,
-          "Le fichier n'est pas au format CSV, il n'a pas été géocodé."
+          'Le fichier n\'est pas au format CSV, il n\'a pas été géocodé.'
         );
       }
     },

@@ -114,7 +114,7 @@ export default {
       req.onreadystatechange = function() {
         if(req.status === 200 && req.readyState === 4 && req.responseText) {
           JSON.parse(req.responseText).forEach(function(file) {
-            const rg = new RegExp("[^.]+");
+            const rg = new RegExp('[^.]+');
             const name = file.name.match(rg)[0];
             let layer = {
               id: app.getRandomId(),
@@ -148,7 +148,7 @@ export default {
       // add to popover
       let addToPopover = function(textToDisplay) {
         // set content text to html template for this component
-        document.getElementById('popover-text').innerHTML = textToDisplay ? textToDisplay : "<em>Aucune informations disponible.</em>";
+        document.getElementById('popover-text').innerHTML = textToDisplay ? textToDisplay : '<em>Aucune informations disponible.</em>';
         // add content to popup import by popup content
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
       };
@@ -163,9 +163,9 @@ export default {
         popup.setPosition(position);
         let props = feature.getProperties();
         // create popup content
-        let textContent = "";
+        let textContent = '';
         Object.keys(props).forEach(function(propName) {
-          if(typeof(props[propName]) != "object" 
+          if(typeof(props[propName]) != 'object' 
           && propName.indexOf('result') < 0 
           && propName != 'label'
           && propName != 'latitude' 
@@ -176,7 +176,7 @@ export default {
           }
         });
         // check if adress exit in popover content
-        if(textContent.indexOf("Adresse") < 0) {
+        if(textContent.indexOf('Adresse') < 0) {
           //let coordinates = feature.getGeometry().getCoordinates();
           // clone object to transform cooridnates
           let coordinates = JSON.parse(JSON.stringify(position));
@@ -260,7 +260,7 @@ export default {
       map.addInteraction(dragAndDropInteraction );
       // event behavior
       dragAndDropInteraction.on('addfeatures', function(event) {        
-        const rg = new RegExp("[^.]+");
+        const rg = new RegExp('[^.]+');
         const name = event.file.name.match(rg)[0];        
         const id = app.getRandomId();
         let vectorSource = new VectorSource({
@@ -284,7 +284,7 @@ export default {
      * @param popup - ol.overlay
      */
     addClickInteraction(popup) {
-      // click interaction working on "click"
+      // click interaction working on 'click'
       let app = this;
       // event to hide or show popover
       this.$store.state.map.on('click', function(evt) {
@@ -386,7 +386,7 @@ export default {
           break;
         case 'GEOJSON':
           // force 3857 projection by default
-          formatFactory = new GeoJSON({"dataProjection":"EPSG:3857"});
+          formatFactory = new GeoJSON({'dataProjection':'EPSG:3857'});
           break;
         case 'TILE':
           formatFactory = new TileLayer();
