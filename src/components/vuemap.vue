@@ -117,7 +117,6 @@ export default {
       let copyTest = document.queryCommandSupported('copy');
       if(copyTest && document.getElementById('popover-text') ) {
         let text = [];
-        let f = this.fieldsPopup;
         this.fieldsPopup.forEach(function(id) {
           if(id 
           && id != 'Type' 
@@ -170,7 +169,6 @@ export default {
     showOverlay(selectFeature, popup) {
       let app = this;
       this.fieldsPopup = [];
-      let format = this.$store.state.uploadFormat;
       // control text to add into popover
       let controlText = function(content, textToInsert) {
         if(content.indexOf(textToInsert) < 0 && textToInsert != '') {
@@ -208,7 +206,7 @@ export default {
         let props = feature.getProperties();
         // create popup content
         let textContent = '';
-        let name, adresse, cp, ville, value;
+        let value;
         Object.keys(props).forEach(function(propName) {
             if(typeof(props[propName]) != 'object' 
             && propName.indexOf('result') < 0 
@@ -241,13 +239,13 @@ export default {
                   newName = propName;
               }
               let newNameId = newName.replace(/ /g, '_');
-              let value = props[propName].toString();              
+              value = props[propName].toString();              
               textContent += controlText(textContent, '<strong>' + newName+ ': </strong><span id='+newNameId+'>' + value.toLowerCase()) + '</span>';
               app.fieldsPopup.push(newNameId);
             } else {
               // TODO - not duplicate
               let newPropName = propName.replace(/ /g, '_');
-              let value = props[propName].toString();
+              value = props[propName].toString();
               textContent += controlText(textContent, '<strong>' + propName+ ': </strong><span id='+newPropName+'>' + value.toLowerCase()) + '</span>';
               app.fieldsPopup.push(newPropName);
             }
@@ -269,7 +267,6 @@ export default {
               // SUCCESS
               if(http.status == 200 && http.responseText && JSON.parse(http.responseText).features.length > 0) {
                 let props = JSON.parse(http.responseText).features[0].properties;
-                let newPropName;
                 // Adresse
                 app.fieldsPopup.push("adresse");               
                 textContent += controlText(textContent, '<strong>Adresse: </strong><span id="adresse">'+ props.name+'</span>');
