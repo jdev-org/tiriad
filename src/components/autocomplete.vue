@@ -3,7 +3,7 @@
 <div class='row col-12'>
   <b-autocomplete
     size="is-mobile"
-    class="col-12 pr-0 col-sm-6 autocomplete-field"
+    class="col-12 pr-0 col-sm-6 col-md-3 autocomplete-field"
     v-model="name"
     :data="data"
     :placeholder="placeHolder"
