@@ -380,7 +380,7 @@ export default {
     removeFile(layerName) {
       let requestBody = new FormData();
       let fileName = layerName + '.json';
-      requestBody.append('filename', fileName.replace(' ','_'));
+      requestBody.append('filename', fileName.replace(/ /g, '_'));
       let request = new XMLHttpRequest();
       request.open('POST', 'https://jdev.fr/tiriad/php/removeFile.php');
       request.send(requestBody);
