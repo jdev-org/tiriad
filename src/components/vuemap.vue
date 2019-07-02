@@ -1,12 +1,13 @@
 <template>
   <div class="vuemap">
     <!-- Popup content-->
+    <div>
     <div id="popover-content" class="card" style="display:none;">
-      <div id="popover-text" class="card-body" style="padding-top: 10px;">
-        <h5 class="card-title">Special title treatment</h5>
-        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+      <div id="popover-text" class="card-body pb-0" style="padding-top: 10px;">        
+        <p class="card-text">Will be replace by features infos.</p>
       </div>
-    </div>  
+    </div>
+    </div>
     <!-- Popup container-->
     <popup class="p-0" id="popup"/> 
     <vl-map
@@ -33,9 +34,13 @@
       <button type="button" @click="displayToc" id="tocBtn" class="btn btn-sm btn-map" data-toggle="tooltip" data-html="true" title="<em>Gestion des couches</em>">
         <i class="fas fa-eye"></i>
       </button>
+      <a>
+      <div>
       <button type="button" @click="overView" style="display:none" id="toolsManagerBtn" class="btn btn-sm btn-map" data-toggle="tooltip" data-html="true" title="Boîte à outils (à venir)</em>">
         <i class="fas fa-tools"></i>
       </button>
+      </div>
+      </a>
     </div>
   </div>
 </template>
@@ -100,10 +105,35 @@ export default {
         format: 'KML',
       }],
       geolocCoordinates:{},
-      popupCount: 0
+      popupCount: 0,
+      fieldsPopup: []
     };
   },
   methods: {
+    /**
+     * Copy a string to clipboard
+     */    
+    copyPopoverContent() {
+      let copyTest = document.queryCommandSupported('copy');
+      if(copyTest && document.getElementById('popover-text') ) {
+        let text = [];
+        let f = this.fieldsPopup;
+        this.fieldsPopup.forEach(function(id) {
+          if(id 
+          && id != 'Type' 
+          && document.getElementById(id).innerText 
+          && text.indexOf(document.getElementById(id).innerText) < 0){
+            text.push(document.getElementById(id).innerText);
+          }
+        });
+        const textArea = document.createElement('textarea');
+        textArea.value = text.join(', ');
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+    },
     /**
      * Get layers from file system
      * TODO : finish and test
@@ -138,6 +168,8 @@ export default {
      * @param popup - ol.overlay object
      */
     showOverlay(selectFeature, popup) {
+      let app = this;
+      this.fieldsPopup = [];
       let format = this.$store.state.uploadFormat;
       // control text to add into popover
       let controlText = function(content, textToInsert) {
@@ -150,10 +182,19 @@ export default {
       };
       // add to popover
       let addToPopover = function(textToDisplay) {
-        // set content text to html template for this component
-        document.getElementById('popover-text').innerHTML = textToDisplay ? textToDisplay : '<em>Aucune informations disponible.</em>';
+        // set content text to html template for this component        
+        document.getElementById('popover-text').innerHTML = textToDisplay ? textToDisplay : '<em>Aucune informations disponible.</em>';        
         // add content to popup import by popup content
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
+        // Click event not worked if we add button directly in html card
+        // So, we create the button to copy text here with jquery
+        let btn = '<button style="float:right; color:rgba(26, 112, 175, 1);"' +
+        'type="button" class="btn" data-toggle="tooltip" data-html="true" title="Copier le texte">' +
+        '<i class="fas fa-copy"></i></button>';
+        $('#popup-content').append(btn);
+        $('#popup-content').on("click", "button", function(){
+         app.copyPopoverContent();
+        });
       };
       // get properties
       let props = selectFeature.getProperties();
@@ -199,11 +240,16 @@ export default {
                 default:
                   newName = propName;
               }
-              let value = props[propName].toString();
-              textContent += controlText(textContent, '<strong>' + newName+ ': </strong>' + value.toLowerCase());            
+              let newNameId = newName.replace(/ /g, '_');
+              let value = props[propName].toString();              
+              textContent += controlText(textContent, '<strong>' + newName+ ': </strong><span id='+newNameId+'>' + value.toLowerCase()) + '</span>';
+              app.fieldsPopup.push(newNameId);
             } else {
+              // TODO - not duplicate
+              let newPropName = propName.replace(/ /g, '_');
               let value = props[propName].toString();
-              textContent += controlText(textContent, '<strong>' + propName+ ': </strong>' + value.toLowerCase());
+              textContent += controlText(textContent, '<strong>' + propName+ ': </strong><span id='+newPropName+'>' + value.toLowerCase()) + '</span>';
+              app.fieldsPopup.push(newPropName);
             }
           }       
         });
@@ -223,9 +269,16 @@ export default {
               // SUCCESS
               if(http.status == 200 && http.responseText && JSON.parse(http.responseText).features.length > 0) {
                 let props = JSON.parse(http.responseText).features[0].properties;
-                textContent += controlText(textContent, '<strong>Adresse: </strong>' + props.name);
-                textContent += controlText(textContent, '<strong>Code postal: </strong>' + props.postcode);
-                textContent += controlText(textContent, '<strong>Ville: </strong>' + props.city);              
+                let newPropName;
+                // Adresse
+                app.fieldsPopup.push("adresse");               
+                textContent += controlText(textContent, '<strong>Adresse: </strong><span id="adresse">'+ props.name+'</span>');
+                // post code
+                app.fieldsPopup.push('postcode');
+                textContent += controlText(textContent, '<strong>Code postal: </strong><span id="postcode">'+ props.postcode+'</span>');
+                // city                
+                app.fieldsPopup.push("city");
+                textContent += controlText(textContent, '<strong>Ville: </strong><span id="city">'+ props.city+'</span>');
                 addToPopover(textContent.replace('name', 'Nom'));
               } else {
                 addToPopover(textContent);
