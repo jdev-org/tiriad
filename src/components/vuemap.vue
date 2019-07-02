@@ -168,9 +168,15 @@ export default {
         // create popup content
         let textContent = '';
         let name, adresse, cp, ville, value;
-        Object.keys(props).forEach(function(propName) {          
-          // for CSV we want to harmonize popover content according to kml response
-          if(format === 'CSV') {
+        Object.keys(props).forEach(function(propName) {
+            if(typeof(props[propName]) != 'object' 
+            && propName.indexOf('result') < 0 
+            && propName != 'label'
+            && propName != 'latitude' 
+            && propName != 'longitude'
+            && propName.indexOf('media') < 0
+            && propName.indexOf('description') < 0 
+            && propName.indexOf('style') < 0 ) {           
             let toFind =  ['Nom_1', 'Adresse_(1)', 'Ville', 'Code_Postal', 'Code_Catégorie'];            
             if(toFind.indexOf(propName) > -1) {
               let newName;
@@ -194,20 +200,12 @@ export default {
                   newName = propName;
               }
               let value = props[propName].toString();
-              textContent += controlText(textContent, '<strong>' + newName+ ': </strong>' + value.toLowerCase());
-            }
-          } else {
-            // for other upload
-            if(typeof(props[propName]) != 'object' 
-            && propName.indexOf('result') < 0 
-            && propName != 'label'
-            && propName != 'latitude' 
-            && propName != 'longitude' 
-            && propName.indexOf('style') < 0 ) {            
+              textContent += controlText(textContent, '<strong>' + newName+ ': </strong>' + value.toLowerCase());            
+            } else {
               let value = props[propName].toString();
               textContent += controlText(textContent, '<strong>' + propName+ ': </strong>' + value.toLowerCase());
             }
-          }          
+          }       
         });
         // check if adress exit in popover content
         if(textContent.indexOf('Adresse') < 0) {
