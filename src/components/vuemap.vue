@@ -137,7 +137,8 @@ export default {
      * @param e - event
      * @param popup - ol.overlay object
      */
-    showOverlay(selectFeature, popup) {  
+    showOverlay(selectFeature, popup) {
+      let format = this.$store.state.uploadFormat;
       // control text to add into popover
       let controlText = function(content, textToInsert) {
         if(content.indexOf(textToInsert) < 0 && textToInsert != '') {
@@ -166,20 +167,50 @@ export default {
         let props = feature.getProperties();
         // create popup content
         let textContent = '';
-        Object.keys(props).forEach(function(propName) {
-          if(typeof(props[propName]) != 'object' 
-          && propName.indexOf('result') < 0 
-          && propName != 'label'
-          && propName != 'latitude' 
-          && propName != 'longitude' 
-          && propName.indexOf('style') < 0 ) {            
-            let value = props[propName].toString();
-            textContent += controlText(textContent, '<strong>' + propName+ ': </strong>' + value.toLowerCase());
-          }
+        let name, adresse, cp, ville, value;
+        Object.keys(props).forEach(function(propName) {          
+          // for CSV we want to harmonize popover content according to kml response
+          if(format === 'CSV') {
+            let toFind =  ['Nom_1', 'Adresse_(1)', 'Ville', 'Code_Postal', 'Code_Catégorie'];            
+            if(toFind.indexOf(propName) > -1) {
+              let newName;
+              switch (propName) {
+                case "Adresse_(1)":
+                  newName = "Adresse";
+                  break;
+                case 'Nom_1':
+                  newName = 'Nom';
+                  break;
+                case 'Ville':
+                  newName = 'Ville';
+                  break;
+                case 'Code_Postal':
+                  newName = 'Code postal';
+                  break;
+                case 'Code_Catégorie':
+                  newName = 'Type'
+                  break;
+                default:
+                  newName = propName;
+              }
+              let value = props[propName].toString();
+              textContent += controlText(textContent, '<strong>' + newName+ ': </strong>' + value.toLowerCase());
+            }
+          } else {
+            // for other upload
+            if(typeof(props[propName]) != 'object' 
+            && propName.indexOf('result') < 0 
+            && propName != 'label'
+            && propName != 'latitude' 
+            && propName != 'longitude' 
+            && propName.indexOf('style') < 0 ) {            
+              let value = props[propName].toString();
+              textContent += controlText(textContent, '<strong>' + propName+ ': </strong>' + value.toLowerCase());
+            }
+          }          
         });
         // check if adress exit in popover content
         if(textContent.indexOf('Adresse') < 0) {
-          //let coordinates = feature.getGeometry().getCoordinates();
           // clone object to transform cooridnates
           let coordinates = JSON.parse(JSON.stringify(position));
           // reproject coordinates for the ban API
@@ -199,15 +230,12 @@ export default {
                 textContent += controlText(textContent, '<strong>Ville: </strong>' + props.city);              
                 addToPopover(textContent.replace('name', 'Nom'));
               } else {
-                // FAIL
                 addToPopover(textContent);
               }
             };
-            http.send();            
+            http.send();
           }
         } else {
-          textContent = textContent.replace('Code_Categorie','Type');
-          textContent = textContent.replace('Code_Postal','Code postal');          
           addToPopover(textContent);
         }        
       }
