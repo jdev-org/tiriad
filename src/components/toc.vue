@@ -348,10 +348,14 @@ export default {
     /**
      * File reader
      */
-    readFile(blob, callback) {
+    readFile(encoding, blob, callback) {
       const reader = new FileReader();
       reader.onload = callback;
-      reader.readAsText(blob,'ISO-8859-1');
+      if(encoding) {
+        reader.readAsText(blob,encoding);
+      } else {
+        reader.readAsText(blob);
+      }      
     },
     /**
      * save file new
@@ -616,6 +620,22 @@ export default {
       }
     },
     /**
+     * Get file's format
+     * @param {String} name for file's name
+     */
+    getFormat(name) {
+      let encoding = null;
+      if(name.indexOf('json') > -1) {
+        this.$store.commit('setUploadFormat', 'GEOJSON');        
+      } else if(name.indexOf('kml') > -1) {
+        this.$store.commit('setUploadFormat', 'KML');
+      } else if(name.indexOf('csv') > -1) {
+        this.$store.commit('setUploadFormat', 'CSV');
+        encoding = 'ISO-8859-1';
+      }
+      return encoding;
+    },
+    /**
      * Read upload file
      */
     readUploadFile() {
@@ -624,20 +644,18 @@ export default {
       this.jsonFeatures = '';
       this.content = '';
       if (this.dropFiles.length > 0) {
-        // fire read file
+        // read file
         const file = this.dropFiles[this.dropFiles.length - 1];
-        this.readFile(file, e => {
-          if (file.name.indexOf('json') > -1) {
-            this.$store.commit('setUploadFormat', 'GEOJSON');
+        let encoding = this.getFormat(file.name);
+        let format = this.$store.state.uploadFormat;
+        this.readFile(encoding, file, e => {
+          if (format === 'GEOJSON') {
             app.readJson(file, e);            
-          } else if (file.name.indexOf('kml') > -1) {
-            this.$store.commit('setUploadFormat', 'KML');
+          } else if (format === 'KML') {
             app.readKml(file, e);
           } else if (app.geocodeData) {
-            this.$store.commit('setUploadFormat', 'CSV');
             app.csvToApi(e.target.result, file.name);
-          } else {
-            this.$store.commit('setUploadFormat', 'CSV');
+          } else {            
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }
         });
