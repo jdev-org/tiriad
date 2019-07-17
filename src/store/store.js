@@ -22,7 +22,7 @@ export const store = new Vuex.Store({
           let path = './lib/icons/jdev/';
           if(format === 'KML' || val.indexOf('icon') >- 1) {
             color = 'orange';
-            val = val.indexOf('icon-1502') < 0 ? 'DET' : 'CHR';
+            val = val.indexOf('icon-1502') < 0 ? 'CHR' : 'DET';
           }
           switch (val) {
             case 'DET':
@@ -46,7 +46,8 @@ export const store = new Vuex.Store({
           feature.setStyle(style);
         };
       }
-    }
+    },
+    firstLayersNames: []
   },
   mutations: {
     /**
@@ -167,10 +168,23 @@ export const store = new Vuex.Store({
         });
       }
     },
+    /**
+     * 
+     * @param {Object} state 
+     * @param {ol.style} styleAsObj 
+     */
     setStyle(state,styleAsObj) {
       if(styleAsObj && styleAsObj.name && styleAsObj.style && !state.style[styleAsObj.name]) {
         state.style[styleAsObj.name] = styleAsObj.style;
       }
+    },
+    /**
+     * Layers name to ignore for side panel
+     * @param {Object} state 
+     * @param {Array} names 
+     */
+    setFirstLayers(state, names) {
+      state = names;
     }
   },
   getters: {
@@ -184,6 +198,7 @@ export const store = new Vuex.Store({
     getDisplayToc: state => state.displayToc,
     getTocLayers: state => state.tocLayers,
     getStyle: state => state.style,
-    getUploadFormat: state => state.uploadFormat
+    getUploadFormat: state => state.uploadFormat,
+    getfirstLayersNames: state => state.firstLayersNames
   },
 });
