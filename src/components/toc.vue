@@ -370,7 +370,7 @@ export default {
       requestBody.append('content', geojson);
 
       let request = new XMLHttpRequest();
-      request.open('POST', 'https://jdev.fr/tiriad/php/data.php');
+      request.open('POST', './php/data.php');
       request.send(requestBody);
     },
     /**
@@ -382,7 +382,7 @@ export default {
       let fileName = layerName + '.json';
       requestBody.append('filename', fileName.replace(/ /g, '_'));
       let request = new XMLHttpRequest();
-      request.open('POST', 'https://jdev.fr/tiriad/php/removeFile.php');
+      request.open('POST', './php/removeFile.php');
       request.send(requestBody);
     },    
     /**
@@ -404,7 +404,7 @@ export default {
       };
       let requestBody = new FormData();
       requestBody.append('filename', fileName);
-      req.open('POST', 'https://jdev.fr/tiriad/php/getData.php', false);
+      req.open('POST', './php/getData.php', false);
       req.send(requestBody);
     },
     /**
