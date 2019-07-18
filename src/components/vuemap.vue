@@ -158,7 +158,7 @@ export default {
           });
         }
       };          
-      req.open('POST', 'https://jdev.fr/tiriad/php/getLayers.php', true);          
+      req.open('POST', './php/getLayers.php', true);          
       req.send();
     },
     /**
