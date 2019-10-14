@@ -138,7 +138,7 @@
                     <p>
                       <b-icon icon="upload" size="is-small"></b-icon>
                     </p>
-                    <p>Cliquer ou glisser un fichier CSV, JSON</p>
+                    <p>Cliquer ou glisser un fichier CSV, KML, JSON</p>
                   </div>
                 </section>
               </b-upload>
@@ -512,9 +512,9 @@ export default {
         new Blob([csvString], { type: 'text/csv; charset=utf-8' }),
         'upload.csv'
       );
-      requestBody.append('columns', 'Adresse (1)');
-      requestBody.append('columns', 'Code Postal');
-      requestBody.append('columns', 'Ville');
+      requestBody.append('columns', 'adresse');
+      requestBody.append('columns', 'code_postal');
+      requestBody.append('columns', 'ville');
       fetch('https://api-adresse.data.gouv.fr/search/csv/', {
         method: 'POST',
         body: requestBody

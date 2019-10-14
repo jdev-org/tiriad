@@ -16,7 +16,7 @@ export const store = new Vuex.Store({
     style:{
       featuresStyle: function(format) {
         return function(feature) {
-          let val = feature.get('Code_Catégorie') ? feature.get('Code_Catégorie') : feature.get('styleUrl');
+          let val = feature.get('code_categorie') ? feature.get('code_categorie') : feature.get('styleUrl');
           let icon;
           let color = 'red';
           let path = './lib/icons/jdev/';
