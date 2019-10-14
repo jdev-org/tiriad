@@ -123,7 +123,7 @@
             <p id="geocodText" :style="{display: isGeocodage}">
               Pour localiser un fichier CSV, le fichier doit au moins contenir les colonnes suivantes :
               <br>
-              <i>Adresse (1), Code Postal, Ville</i>
+              <i>Adresse, code_postal, ville</i>
             </p>
             <b-field>
               <b-upload

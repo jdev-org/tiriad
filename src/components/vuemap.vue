@@ -216,23 +216,23 @@ export default {
             && propName.indexOf('media') < 0
             && propName.indexOf('description') < 0 
             && propName.indexOf('style') < 0 ) {           
-            let toFind =  ['Nom_1', 'Adresse_(1)', 'Ville', 'Code_Postal', 'Code_Catégorie'];            
+            let toFind =  ['nom', 'adresse', 'ville', 'code_postal', 'code_categorie'];            
             if(toFind.indexOf(propName) > -1) {
               let newName;
               switch (propName) {
-                case "Adresse_(1)":
+                case "adresse":
                   newName = "Adresse";
                   break;
-                case 'Nom_1':
+                case 'nom':
                   newName = 'Nom';
                   break;
-                case 'Ville':
+                case 'ville':
                   newName = 'Ville';
                   break;
-                case 'Code_Postal':
+                case 'code_postal':
                   newName = 'Code postal';
                   break;
-                case 'Code_Catégorie':
+                case 'code_categorie':
                   newName = 'Type'
                   break;
                 default:
