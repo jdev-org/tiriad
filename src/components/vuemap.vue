@@ -240,13 +240,13 @@ export default {
               }
               let newNameId = newName.replace(/ /g, '_');
               value = props[propName].toString();              
-              textContent += controlText(textContent, '<strong>' + newName+ ': </strong><span id='+newNameId+'>' + value.toLowerCase()) + '</span>';
+              textContent += controlText(textContent, '<strong>' + newName+ ': </strong><span id='+newNameId+'>' + value) + '</span>';
               app.fieldsPopup.push(newNameId);
             } else {
               // TODO - not duplicate
               let newPropName = propName.replace(/ /g, '_');
               value = props[propName].toString();
-              textContent += controlText(textContent, '<strong>' + propName+ ': </strong><span id='+newPropName+'>' + value.toLowerCase()) + '</span>';
+              textContent += controlText(textContent, '<strong>' + propName+ ': </strong><span id='+newPropName+'>' + value) + '</span>';
               app.fieldsPopup.push(newPropName);
             }
           }       
