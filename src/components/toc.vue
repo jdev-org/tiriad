@@ -187,7 +187,8 @@ export default {
       mapProjection: 'EPSG:3857',
       displayImportProj: 'none',
       checkboxChecked: false,
-      banReverseResult: ''
+      banReverseResult: '',
+      banAccuracy: 0.5
     };
   },
   methods: {
@@ -495,7 +496,8 @@ export default {
           const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
           // get wrong locations
-          if (name === 'result_score' && (!attribute || parseFloat(attribute) < 0.5)) {
+          let adresseAccuracy = this.banAccuracy || 0.5;
+          if (name === 'result_score' && (!attribute || parseFloat(attribute) < adresseAccuracy)) {
             badScore.push(properties.nom);
           }
         });
