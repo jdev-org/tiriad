@@ -9,7 +9,7 @@
         <toc/>
       </div>
       <div class="row-fluid col-12 p-0">
-        <!--alert/-->
+        <alert/>
       </div>
       <logo/>
     </div>
