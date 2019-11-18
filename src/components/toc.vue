@@ -408,9 +408,33 @@ export default {
       req.send(requestBody);
     },
     /**
+     * Copy alert content
+     */
+    copyAlertContent() {
+      // get content
+      let text = []
+      $('#mainAlert>div>span').each((i,el) => {
+        text.push(el.innerText)
+      })
+      let content = text.join(', ')
+      // process to copy content
+      let copyTest = document.queryCommandSupported('copy');
+      if(copyTest) {
+        content = content.length ? content : 'Aucun élément(s) à copier.'
+        const textArea = document.createElement('textarea');
+        textArea.value = content;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+    },
+    /**
      * Transform csv as object to geojson
      */
     csvToJsonPoints(fileName, csvObject, crs) {
+      let badScore = [];
+      const app = this;
       fileName = fileName.replace('.csv', '');
       // layer skeleton
       const geojsonLayer = {
@@ -436,6 +460,8 @@ export default {
       // get columns name
       const colName = csvObject[0];
       csvObject.splice(0, 1);
+      // remove empty lines
+      csvObject = csvObject.filter(line => line.filter(f => f).length)
       // find coordinates fields
       let x, y;
       colName.forEach(function(col) {
@@ -465,9 +491,13 @@ export default {
       // parse attributes values
       csvObject.forEach((line) => {
         const properties = {};
-        line.forEach((attribute, i) => {
+        line.forEach((attribute, i) => {          
           const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
+          // get wrong locations
+          if (name === 'result_score' && (!attribute || parseFloat(attribute) < 0.5)) {
+            badScore.push(properties.nom);
+          }
         });
 
         // clone feature skeleton
@@ -490,7 +520,7 @@ export default {
           newFeature.geometry.coordinates.push(pY);
           // add feature to layer
           geojsonLayer.features.push(newFeature);
-        }
+        }                
       });
       fileName = fileName.replace(' ', '');
       // display layer to map
@@ -499,6 +529,30 @@ export default {
         geojsonLayer.crs.properties.name,
         fileName
       );
+      // display info about wrong location
+      if (badScore.length > 0) {
+        // clear alert
+        $('#mainAlert>div').text('')
+        // Create and insert alert content
+        let text = '<strong class="pb-2"> (' + badScore.length + ') Adresses à vérifier :</strong>';
+        badScore.forEach((el) => {
+          let elSpan = '<br> <span>' + el + '</span>'
+          text += el != '' ? elSpan : ''
+        });
+        // add content
+        $('#mainAlert>div').append(text)
+        // add copy button
+        // So, we create the button to copy text here with jquery
+        let btn = '<button id="alertCopyBtn"' +
+        'type="button" class="btn" data-toggle="tooltip" data-html="true" title="Copier le texte">' +
+        '<i class="fas fa-copy"></i></button>';
+        $('#mainAlert').append(btn)
+        $('#mainAlert').on("click", "button", function(){
+          app.copyAlertContent()
+        })
+        // show alert
+        $('#mainAlert').addClass('show')
+      }      
     },
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
@@ -679,5 +733,13 @@ export default {
   border-color: transparent;
   box-shadow: 0 2px 3px rgba(255, 255, 255, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+#alertCopyBtn {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  padding: 0.75em 1.25em;
+  color: rgb(133, 100, 4);
 }
 </style>

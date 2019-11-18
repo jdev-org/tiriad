@@ -8,6 +8,9 @@
       <div class="row-fluid col-12 p-0">
         <toc/>
       </div>
+      <div class="row-fluid col-12 p-0">
+        <!--alert/-->
+      </div>
       <logo/>
     </div>
   </div>
@@ -19,6 +22,7 @@ import vuemap from './vuemap.vue';
 import autocomplete from './autocomplete.vue';
 import logo from './logo.vue';
 import toc from './toc.vue';
+import alert from './alert.vue';
 
 export default {
   name: 'vuemain',
@@ -27,6 +31,7 @@ export default {
     autocomplete,
     logo,
     toc,
+    alert
   },
   data() {
     return {
