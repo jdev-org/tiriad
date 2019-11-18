@@ -737,7 +737,7 @@ export default {
 
 #alertCopyBtn {
   position: absolute;
-  bottom: 0px;
+  top: 33px;
   right: 0px;
   padding: 0.75em 1.25em;
   color: rgb(133, 100, 4);

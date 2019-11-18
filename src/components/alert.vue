@@ -18,6 +18,6 @@ export default {
 <style scoped>
 .mainAlert {
   position: fixed;
-  top: 1em;
+  top: 3em;
 }
 </style>
