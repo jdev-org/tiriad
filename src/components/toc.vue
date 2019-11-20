@@ -188,7 +188,7 @@ export default {
       displayImportProj: 'none',
       checkboxChecked: false,
       banReverseResult: '',
-      banAccuracy: 0.5
+      banAccuracy: 0.7
     };
   },
   methods: {
