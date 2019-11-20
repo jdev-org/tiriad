@@ -498,7 +498,9 @@ export default {
           // get wrong locations
           let adresseAccuracy = this.banAccuracy || 0.5;
           if (name === 'result_score' && (!attribute || parseFloat(attribute) < adresseAccuracy)) {
-            badScore.push(properties.nom);
+            let arr = [properties.nom, properties.adresse, properties.ville, properties.code_postal];
+            let arrNoNull = arr.filter(str => str.replace(/ /g,'').length)
+            badScore.push(arrNoNull.join(', '));
           }
         });
 
