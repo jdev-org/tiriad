@@ -511,10 +511,30 @@ export default {
       return layer;
     },
     /**
+     * Read and get configuration file 
+     */
+    readConfig() {
+      const app = this;
+      let configFile = {};
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("GET", "./config.json", true);
+      xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.status == 200){
+          if(xmlhttp.readyState == 4) {
+            configFile = JSON.parse(xmlhttp.responseText);
+            app.$store.commit('setConfig', configFile);
+          }
+        }
+      };
+      xmlhttp.send(null);
+    },
+    /**
      * Fire when VueLayers Map is mounted after map init
      */
     onMapMounted() {
       const app = this;
+      // get config
+      this.readConfig();
       // get map from vue instance
       const map = this.getMap();
       // start tracking      
