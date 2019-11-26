@@ -269,7 +269,6 @@ export default {
      * Remove a given by id
      * @param id - layer id
      */
-
     removeLayerById(id) {
       // remove layer
       this.$store.state.map.removeLayer(this.getLayerById(id));
@@ -496,7 +495,7 @@ export default {
           const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
           // get wrong locations
-          let adresseAccuracy = this.banAccuracy || 0.5;
+          let adresseAccuracy = app.$store.state.config.banQuality || 0.5;
           if (name === 'result_score' && (!attribute || parseFloat(attribute) < adresseAccuracy)) {
             let arr = [properties.nom, properties.adresse, properties.ville, properties.code_postal];
             let arrNoNull = arr.filter(str => str.replace(/ /g,'').length)

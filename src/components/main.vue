@@ -33,6 +33,10 @@ export default {
     toc,
     alert
   },
+  beforeCreate() {
+    // get config from json file
+    this.$store.commit('setConfig', "./config.json");
+  },
   data() {
     return {
       // search adress result's zoom level      

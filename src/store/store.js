@@ -47,7 +47,10 @@ export const store = new Vuex.Store({
         };
       }
     },
-    firstLayersNames: []
+    firstLayersNames: [],
+    config: {},
+    logoUrl: '',
+    urlParams: {}
   },
   mutations: {
     /**
@@ -185,6 +188,28 @@ export const store = new Vuex.Store({
      */
     setFirstLayers(state, names) {
       state = names;
+    },
+    /**
+     * Set config as global app config
+     * @param {object} state 
+     * @param {String} url to call config file from file system 
+     */
+    setConfig(state, url) {
+      let xmlhttp = new XMLHttpRequest();
+      xmlhttp.open("GET", url, true);
+      xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.status == 200){
+          if(xmlhttp.readyState == 4) {
+            state.config = JSON.parse(xmlhttp.responseText);
+          }
+        }
+      };
+      xmlhttp.send(null);       
+    },
+    setUrlParams(state, params) {   
+      params.forEach(el => {
+        state.urlParams[el[0]] = el[1]
+      })
     }
   },
   getters: {
@@ -199,6 +224,8 @@ export const store = new Vuex.Store({
     getTocLayers: state => state.tocLayers,
     getStyle: state => state.style,
     getUploadFormat: state => state.uploadFormat,
-    getfirstLayersNames: state => state.firstLayersNames
+    getfirstLayersNames: state => state.firstLayersNames,
+    getConfig: state => state.config,
+    getUrlParams: state => state.urlParams
   },
 });

@@ -511,30 +511,22 @@ export default {
       return layer;
     },
     /**
-     * Read and get configuration file 
+     * TODO : get config file from URL
      */
-    readConfig() {
-      const app = this;
-      let configFile = {};
-      var xmlhttp = new XMLHttpRequest();
-      xmlhttp.open("GET", "./config.json", true);
-      xmlhttp.onreadystatechange = function () {
-        if (xmlhttp.status == 200){
-          if(xmlhttp.readyState == 4) {
-            configFile = JSON.parse(xmlhttp.responseText);
-            app.$store.commit('setConfig', configFile);
-          }
-        }
-      };
-      xmlhttp.send(null);
+    getUrlParams() {
+      // get url
+      let app = this;
+      app.$store.commit('setUrlParams', new URLSearchParams(window.location.href));
+      // get params from urlParams by forEach
+      //console.log(app.$store.state.urlParams);
     },
     /**
      * Fire when VueLayers Map is mounted after map init
      */
     onMapMounted() {
       const app = this;
-      // get config
-      this.readConfig();
+      // read params from url
+      this.getUrlParams()
       // get map from vue instance
       const map = this.getMap();
       // start tracking      

@@ -13,8 +13,7 @@ export default {
       /**
        * Return urls from config for logo and site when user click on logo
        */
-      getUrl(type) {
-        const app = this;
+      getUrl(type) {        
         let url = '';
         let config = this.$store.state && this.$store.state.config ? this.$store.state.config : '';
         if(config && config[type]) {
