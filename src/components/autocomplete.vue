@@ -7,12 +7,20 @@
     v-model="name"
     :data="data"
     :placeholder="placeHolder"
-    field="label"
+    :field="field"
     :loading="isFetching"
     @input="getAsyncData"
     @select="displayResult"
   >
-    <template slot-scope="props">{{ props.option.properties.label }}</template>
+    <template slot-scope="props">
+      <span v-if="api==='ban'">
+        {{ props.option.properties.label }}
+      </span>
+      <span v-if="api==='nominatim'">
+        {{ props.option.display_name }}
+      </span>      
+    </template>
+
   </b-autocomplete>
   <button
     data-toggle="tooltip" data-html="true" title="<em>Cliquer pour effacer le résultat</em>"
@@ -53,13 +61,16 @@ export default {
   },
   data() {
     return {
-      placeHolder: 'Rue des frères Tilly 22700, Perros-Guirec',
+      placeHolder: 'Entrer une adresse ...',
       data: [],
       isFetching: false,
       name: '',
-      api: 'https://api-adresse.data.gouv.fr/search/?q=',
+      apiBan: 'https://api-adresse.data.gouv.fr/search/?q=',
+      apiNominatim: 'https://nominatim.openstreetmap.org/search.php?format=json&limit=5&q=',
       layer: '',
       isDisplay: 'none',
+      field:'label',
+      api: 'ban'
     };
   },
   methods: {
@@ -167,20 +178,44 @@ export default {
       }
     },
     /**
+     * Get param from config
+     */
+    getParam(param) {        
+      let val = '';
+      let config = this.$store.state && this.$store.state.config ? this.$store.state.config : '';
+      if(config && config[param]) {
+          val = config[param];
+      }
+      return val;
+    },
+    /**
      * Request to search adress
      */
     getAsyncData: debounce(function () {
+      let url;
       // clear last results
       this.data = [];
       // start loader animation
       this.isFetching = true;
-      const url = this.api + this.name;
+      this.api = this.getParam('search');
+      if(this.api === "nominatim") {
+        url =  this.apiNominatim + this.name;
+        this.field = 'display_name';
+      } else {
+        url = this.apiBan + this.name;
+      }
+      
       axios
         .get(url)
         // promise
         .then(({ data }) => {
           // load result to autocomplete form
-          data.features.forEach(item => this.data.push(item));
+          if(this.api != 'ban') { // nominatim
+            data.forEach(item => this.data.push(item));
+          } else { // ban
+            data.features.forEach(item => this.data.push(item));
+          }
+          
           // stop loader animation
           this.isFetching = false;
         })
@@ -213,5 +248,10 @@ export default {
   border-radius: 15px;
   background-color: red;
   font-size: 24px;
+}
+
+.dropdown-menu{
+  margin:0 !important;
+  padding:0 !important;
 }
 </style>
