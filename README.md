@@ -24,7 +24,8 @@ Vous pouvez aussi importer autant de fichiers que vous le souhaitez.
 
 Cas d'usage : 
 ```
-  J'ai un fichier qui contient mes clients et leurs adresses. Je peux modifier le nom des colonnes et j'aimerai les afficher sur une carte.
+  J'ai un fichier qui contient mes clients et leurs adresses. 
+  Je peux modifier le nom des colonnes et j'aimerai les afficher sur une carte.
  ```
 
 ### Créer votre carte
@@ -37,8 +38,9 @@ Ces actions sont simples et garantissent une utilisation sans difficulté.
 
 Cas d'utilisation :
 ```
-  Je souhaiterai retrouver sur une carte mes distributeurs et mes clients. De façon autonome, je souhaite mettre à jour ces informations sans dépendre de quelqu'un.
-  ```
+  Je souhaiterai retrouver sur une carte mes distributeurs et mes clients. 
+  De façon autonome, je souhaite mettre à jour ces informations sans dépendre de quelqu'un.
+ ```
 
 ### Un accés sécurisé
 
