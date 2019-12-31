@@ -5,21 +5,23 @@
     size="is-mobile"
     class="col-12 pr-0 col-sm-6 col-md-3 autocomplete-field"
     v-model="name"
+    value="hello"
     :data="data"
     :placeholder="placeHolder"
     :field="field"
     :loading="isFetching"
     @input="getAsyncData"
     @select="displayResult"
+    id="autocomplete-box"
   >
-    <template slot-scope="props">
-      <span v-if="api==='ban'">
-        {{ props.option.properties.label }}
-      </span>
-      <span v-if="api==='nominatim'">
-        {{ props.option.display_name }}
-      </span>      
-    </template>
+  <template slot-scope="props">
+    <span v-if="api==='ban'">
+      {{ props.option.properties.label }}
+    </span>
+    <span v-if="api==='nominatim'">
+      {{ props.option.display_name }}
+    </span>
+  </template>
 
   </b-autocomplete>
   <button
@@ -61,7 +63,7 @@ export default {
   },
   data() {
     return {
-      placeHolder: 'Entrer une adresse ...',
+      placeHolder:'Entrer une adresse...',
       data: [],
       isFetching: false,
       name: '',
@@ -116,6 +118,7 @@ export default {
     clearLayer() {
       this.layer.getSource().clear();
       this.isDisplay = 'none';
+      this.name = '';
     },
     /**
      * Create layer use by autocomplet component to display result
@@ -134,47 +137,70 @@ export default {
       }
     },
     /**
-     * Remove result feature
-     */
-    removeFeature() {
-      this.$store.commit('setSearchFeatures', {});
+    * Convert string coordinates to real array
+    * @param val - string to array
+    * return coordinate array readable by openLayers
+    */
+    xyStringToArray(val) {
+        let arrXY;
+        if(val.replace(/\s/g, '').length > 0) {
+            let splitCenter = val.split(',');
+            let x = parseFloat(splitCenter[0]);
+            let y = parseFloat(splitCenter[1]);
+            arrXY = [x,y];
+            return  arrXY;
+        }
     },
     /**
      * Trigger when user select adress from results list
      * @param selected is the selected adress from list
      */
     displayResult(selected) {
-      let map = this.$store.state.map;
-      if (selected.geometry) {
-        const xy = selected.geometry.coordinates;
-
-        // create new feature if necessary
-        const newFeature = new Feature({
-          id: selected.properties.id,
-          geometry: new Point(transform(xy, 'EPSG:4326', 'EPSG:3857')),
-        });
-        const iconStyle = new Style({
-          image: new Icon({
-            src: './img/geoPin.png',
-          }),
-        });
-        newFeature.setStyle(iconStyle);
-        if (this.layer === '') {
-          this.createLayer();
-        }
-        this.layer.getSource().clear();
-
-        if(this.flashResult){
-          this.flash(map,newFeature,this.layer.getSource());
+      if(selected) {
+        let map = this.$store.state.map;
+        let xy;
+        let preprojectGeom;
+        if(this.api === 'nominatim') {
+          xy = this.xyStringToArray(selected.lon + ',' + selected.lat);
         } else {
-          this.layer.getSource().addFeature(newFeature);
-          this.layer.getSource().refresh();
-          this.isDisplay = '';
-        }        
+          xy = selected.geometry.coordinates;
+          selected.label = selected.properties.label;
+        }
+        if(xy.length > 0) {
+          preprojectGeom = new Point(transform(xy, 'EPSG:4326', 'EPSG:3857'));
+        }
+        if (preprojectGeom) {
+          // create new feature if necessary
+          const newFeature = new Feature({
+            id: selected.properties ? selected.properties.id : '',
+            geometry: preprojectGeom
+          });
+          const iconStyle = new Style({
+            image: new Icon({
+              src: './img/geoPin.png'
+            }),
+          });
+          newFeature.setStyle(iconStyle);
+          if (this.layer === '') {
+            this.createLayer();
+          }
+          this.layer.getSource().clear();
 
-        // chnage view
-        map.getView().setZoom(this.zoom);
-        map.getView().setCenter(transform(xy, 'EPSG:4326', 'EPSG:3857'));        
+          if(this.flashResult){
+            this.flash(map,newFeature,this.layer.getSource());
+          } else {
+            this.layer.getSource().addFeature(newFeature);
+            this.layer.getSource().refresh();
+            this.isDisplay = '';
+          }        
+
+          // change view
+          map.getView().setZoom(this.zoom);
+          map.getView().setCenter(transform(xy, 'EPSG:4326', 'EPSG:3857'));
+
+          // set value 
+          this.name = selected.label || selected.display_name;
+        }
       }
     },
     /**
@@ -192,15 +218,19 @@ export default {
      * Request to search adress
      */
     getAsyncData: debounce(function () {
+      if(!this.name) { 
+        // avoid to fire request if nothing was input
+        return;
+      }
       let url;
       // clear last results
       this.data = [];
       // start loader animation
       this.isFetching = true;
       this.api = this.getParam('search');
+      
       if(this.api === "nominatim") {
         url =  this.apiNominatim + this.name;
-        this.field = 'display_name';
       } else {
         url = this.apiBan + this.name;
       }
