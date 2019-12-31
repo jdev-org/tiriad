@@ -223,19 +223,21 @@ export default {
         // avoid to fire request if nothing was input
         return;
       }
-      let url;
+        let url;
       // clear last results
       this.data = [];
       // start loader animation
       this.isFetching = true;
-      this.api = this.getParam('search');
+      // get api name to use from input. ex : ban/paris or nominatim/paris.
+      let text = this.name.split('/');
+      let request = text.length > 1 ? text[1] : text[0];
+      this.api = text.length > 1 ? text[0] : this.getParam('search');
       
       if(this.api === "nominatim") {
-        url =  this.apiNominatim + this.name;
+        url =  this.apiNominatim + request;
       } else {
-        url = this.apiBan + this.name;
+        url = this.apiBan + request;
       }
-      
       axios
         .get(url)
         // promise
