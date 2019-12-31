@@ -162,6 +162,7 @@ export default {
         let preprojectGeom;
         if(this.api === 'nominatim') {
           xy = this.xyStringToArray(selected.lon + ',' + selected.lat);
+          selected.label = selected['display_name'];
         } else {
           xy = selected.geometry.coordinates;
           selected.label = selected.properties.label;
@@ -198,8 +199,8 @@ export default {
           map.getView().setZoom(this.zoom);
           map.getView().setCenter(transform(xy, 'EPSG:4326', 'EPSG:3857'));
 
-          // set value 
-          this.name = selected.label || selected.display_name;
+          // set value
+          this.name = selected.label ? selected.label : '';
         }
       }
     },
