@@ -48,17 +48,24 @@ Selon vos besoins, l'accès à Tiriad peut être limité par un login et un mot 
 
 ### De quoi avez-vous besoin ?
 
-Tiriad nécessite très peu de ressources. Vous devrez seulement disposer d'une serveur web type Apache ou Nginx.
+Tiriad nécessite très peu de ressources. Vous devrez seulement disposer d'une serveur web type Apache ou Nginx avec une version récente de PHP.
 Les données que vous aurez importées seront sauvegardées sur votre serveur. Aucun lien ou ressource externe n'est nécessaire pour garantir votre indépendance et la bonne sécurité de vos informations.
 
+Tiriad vous permet de générer le fichier de données nécessaires au plugin Wordpress MSL -> https://wordpress.org/plugins/map-store-location/
 
 
+## Configuration de l'application
+
+Le fichie config.json, vous permet de paramétrer certains éléments de l'application : 
+banQuality -> de 0.1 à 1.0, vous permet d'être alerter quand la qualité du geocodage est inférieur à ce seuil
+siteurl -> l'url appelé lors d'un clic sur le logo en bas à droite
+logourl -> le logo affiché en bas à droite sur la carte
+search -> correspond à l'api appeler lors d'une recherche d'adress 
+          soit ban pour une recherche sur l'api BAN : https://geo.api.gouv.fr/adresse
+          soit nominatim pour une recherche OSM nomination :  https://nominatim.openstreetmap.org/
 
 
-
-
-
-# Installation
+# Compilation et installation
 
 ## Project setup
 ```
