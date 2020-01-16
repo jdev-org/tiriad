@@ -3,7 +3,7 @@
     <div class="row mainAlert col-12 justify-content-center">
         <div id="mainAlert" class="alert alert-warning alert-dismissible fade" role="alert">
             <div></div>
-            <button type="button" class="close" onclick="$('#mainAlert').removeClass('show')" aria-label="Close">
+            <button type="button" id="alertCloseBtn" class="close" onclick="$('#mainAlert').removeClass('show')" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
