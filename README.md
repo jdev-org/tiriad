@@ -18,9 +18,12 @@ Cas d'usage :
 ```
 
 ### Localiser vos adresses
-Grâce à un fichier type tableur (csv) qui contiendra toutes les adresses à afficher, Tiriad pourra localiser vos informations adressées. Pour cela, une interface simple est proposée.
+Grâce à un fichier type tableur (csv) qui contiendra toutes les adresses à afficher, Tiriad pourra localiser vos informations adressées. Pour cela, une interface simple est proposée via le menu importer.
 
-Vous pouvez aussi importer autant de fichiers que vous le souhaitez.
+Le fichier csv à importer doit contenir au minimum les entêtes :
+nom,adresse,code_postal,ville,code_categorie
+
+Vous pouvez importer autant de fichiers que vous le souhaitez et vous pouvez stocker le résultat sur le serveur si besoin pour y accéder plus tard.
 
 Cas d'usage : 
 ```
