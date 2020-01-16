@@ -126,7 +126,7 @@ export default {
             request.onreadystatechange = function() {
                 if (request.readyState == 4 && request.status == 200 && request.responseText) {
                     let responseText = JSON.parse(request.responseText);
-                    if(!responseText.success) {
+                    if(responseText && !responseText.success) {
                         // display error message into alert component
                         $('#mainAlert').removeClass('show');
                         $('#mainAlert>div').empty();
