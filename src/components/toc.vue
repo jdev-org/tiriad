@@ -22,6 +22,7 @@
         >
           <div class="card-body">
             <ul id="layersList" class="list-group">
+              <!--Create toc content for each layers-->
               <li class="list-group-item col-12" v-for="layer in layers" :key="layer.id">
                 <!-- layers options -->
                 <div class="btn-group">
@@ -60,7 +61,7 @@
                   <p class="pl-2 m-0">{{layer.getProperties().name}}</p>
                 </div>
               </li>
-            </ul>
+            </ul>            
           </div>
         </div>
       </div>
@@ -157,7 +158,8 @@
           </div>
         </div>
       </div>
-    </div>
+      <exporter/>
+    </div>       
   </div>
 </template>
 <script>
@@ -166,6 +168,8 @@ import Papa from 'papaparse';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import {GeoJSON, KML} from 'ol/format';
+import exporter from './exporter'
+
 // bootstrap tooltips
 $(document).ready(() => {
   $('[data-toggle="tooltip"]').tooltip();
@@ -173,7 +177,7 @@ $(document).ready(() => {
 
 export default {
   name: 'toc',
-  components: {},
+  components: {exporter},
   data() {
     return {
       dropFiles: [],
@@ -359,7 +363,6 @@ export default {
     },
     /**
      * save file new
-     * TODO : add loader
      */
     saveFile(geojson, fileName) {
       let requestBody = new FormData();      
@@ -368,6 +371,7 @@ export default {
       fileName = fileName.replace(/ /g, '_');
       requestBody.append('filename', fileName);      
       requestBody.append('content', geojson);
+      requestBody.append('path', app.$store.state.config.savePath);
 
       let request = new XMLHttpRequest();
       request.open('POST', './php/data.php');
@@ -718,6 +722,18 @@ export default {
         });
       }
       this.dropFiles = [];
+    },
+    /**
+     * Send some html content to the central modal
+     */
+    displayModal() {
+      $('#tiriadModal>')
+    },
+    /**
+     * Allow user to download selected layers as json file
+     */
+    getLayersAsJson() {
+      
     }
   }
 };
