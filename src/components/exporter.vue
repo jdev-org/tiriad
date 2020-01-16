@@ -80,13 +80,13 @@ export default {
             selects = selects.map(layer=>layer.value);
             let match = this.matchInputLayers(selects);
             let JSONLayer = this.manyToOneLayer(match);
-
+            let name = this.fileName ? this.fileName : this.defaultFileName;
             switch (actionNumber) {
                 case 0:
-                    this.downloadFile(JSONLayer, this.fileName);
+                    this.downloadFile(JSONLayer, name);
                     break;
                 case 1:
-                    this.saveFile(JSONLayer, this.fileName);
+                    this.saveFile(JSONLayer, name);
                     break;
                 default:
                     alert(actionFailMsg);
