@@ -212,6 +212,9 @@ export default {
         name = layer.getProperties()['name'];
         if(source && name) {
           json = (new GeoJSON).writeFeatures(source.getFeatures());
+          if(!JSON.parse(json).features.length) {
+            return
+          }
           this.saveFile(json, name);
         }
       }

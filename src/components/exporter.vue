@@ -61,7 +61,8 @@ export default {
             fileName:'',
             defaultFileName:'data',
             placeHolder:'Nommer le fichier...',
-            actionFailMsg: 'Echec de l\'action, merci de contacter votre assistant.'
+            actionFailMsg: 'Echec de l\'action, merci de contacter votre assistant.',
+            noDataMsg: 'Aucunes informations à utiliser!'
         };
     },
     methods: {
@@ -81,6 +82,15 @@ export default {
             let match = this.matchInputLayers(selects);
             let JSONLayer = this.manyToOneLayer(match);
             let name = this.fileName ? this.fileName : this.defaultFileName;
+
+            if(!JSON.parse(JSONLayer).features.length) {
+                $('#alertCloseBtn').trigger('click');
+                $('#mainAlert>div').text(this.noDataMsg);
+                $('#mainAlert').attr('class', "alert alert-dismissible fade alert-warning show");
+                return
+            }
+
+            
             switch (actionNumber) {
                 case 0:
                     this.downloadFile(JSONLayer, name);
