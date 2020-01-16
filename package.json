@@ -22,13 +22,13 @@
     "papaparse": "^4.6.3",
     "popper.js": "^1.15.0",
     "vue": "^2.6.10",
-    "vuelayers": "^0.11.0-rc.7",
+    "vuelayers": "^0.11.21",
     "vuex": "^3.1.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.7.0",
     "@vue/cli-plugin-eslint": "^3.7.0",
-    "@vue/cli-service": "^3.7.0",
+    "@vue/cli-service": "^4.1.2",
     "@vue/eslint-config-airbnb": "^4.0.0",
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",

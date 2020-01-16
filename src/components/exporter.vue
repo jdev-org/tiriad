@@ -61,7 +61,7 @@ export default {
             fileName:'',
             defaultFileName:'data',
             placeHolder:'Nommer le fichier...',
-            actionFailMsg: 'Echec de l\'action, merci de contacter votre assistant.',
+            actionFailMsg: 'Echec de l\'action, merci de contacter votre assistance.',
             noDataMsg: 'Aucunes informations à utiliser!'
         };
     },
@@ -90,7 +90,7 @@ export default {
                 return
             }
 
-            
+
             switch (actionNumber) {
                 case 0:
                     this.downloadFile(JSONLayer, name);
@@ -108,7 +108,7 @@ export default {
          */
         matchInputLayers(ids) {
             let layers = this.$store.state.tocLayers;
-            return layers.filter(layer => ids.indexOf(layer.getProperties().id) > -1); 
+            return layers.filter(layer => ids.indexOf(layer.getProperties().id) > -1);
         },
         /**
          * Merge a list of layers features as unic JSON
@@ -130,9 +130,8 @@ export default {
             fileName += '.json';
             fileName = fileName.replace(/é/g, 'e');
             fileName = fileName.replace(/ /g, '_');
-            requestBody.append('filename', fileName);      
+            requestBody.append('filename', fileName);
             requestBody.append('content', geojson);
-            requestBody.append('path', app.$store.state.config.exportPath);
             let request = new XMLHttpRequest();
             request.onreadystatechange = function() {
                 if (request.readyState == 4 && request.status == 200 && request.responseText) {
@@ -145,7 +144,7 @@ export default {
                     }
                 }
             }
-            request.open('POST', './php/data.php');
+            request.open('POST', './srv/storeData.php');
             request.send(requestBody);
         },
         /**

@@ -41,7 +41,7 @@
                     :value="layer.getProperties().id"
                   >
                     <i class="fa fa-save" activate="false"></i>
-                  </button>                  
+                  </button>
                   <button
                     type="button"
                     class="btn btn-sm py-0 px-2"
@@ -61,7 +61,7 @@
                   <p class="pl-2 m-0">{{layer.getProperties().name}}</p>
                 </div>
               </li>
-            </ul>            
+            </ul>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@
         </div>
       </div>
       <exporter/>
-    </div>       
+    </div>
   </div>
 </template>
 <script>
@@ -193,7 +193,7 @@ export default {
       checkboxChecked: false,
       banReverseResult: '',
       banAccuracy: 0.7,
-      actionFailMsg: 'Echec de l\'action, merci de contacter votre assistant.',
+      actionFailMsg: 'Echec de l\'action, merci de contacter votre assistance.',
     };
   },
   methods: {
@@ -312,7 +312,7 @@ export default {
     destroyLayer(e) {
       let isBtn = e.target.type == 'button' ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
-      // remove layer from file system      
+      // remove layer from file system
       let name = this.getLayerById(layerId).getProperties()['name'];
       this.removeFile(name);
       // remove layer
@@ -363,23 +363,22 @@ export default {
         reader.readAsText(blob,encoding);
       } else {
         reader.readAsText(blob);
-      }      
+      }
     },
     /**
      * save file new
      */
     saveFile(geojson, fileName) {
       let app = this;
-      let requestBody = new FormData();      
+      let requestBody = new FormData();
       fileName += '.json';
       fileName = fileName.replace(/é/g, 'e');
       fileName = fileName.replace(/ /g, '_');
-      requestBody.append('filename', fileName);      
+      requestBody.append('filename', fileName);
       requestBody.append('content', geojson);
-      requestBody.append('path', app.$store.state.config.savePath);
 
       let request = new XMLHttpRequest();
-      request.open('POST', './php/data.php');
+      request.open('POST', './srv/storeData.php');
       request.onreadystatechange = function() {
           if (request.readyState == 4 && request.status == 200 && request.responseText) {
               let responseText = JSON.parse(request.responseText);
@@ -402,9 +401,9 @@ export default {
       let fileName = layerName + '.json';
       requestBody.append('filename', fileName.replace(/ /g, '_'));
       let request = new XMLHttpRequest();
-      request.open('POST', './php/removeFile.php');
+      request.open('POST', './srv/removeFile.php');
       request.send(requestBody);
-    },    
+    },
     /**
      * Get file from server
      */
@@ -423,7 +422,7 @@ export default {
       };
       let requestBody = new FormData();
       requestBody.append('filename', fileName);
-      req.open('POST', './php/getData.php', false);
+      req.open('POST', './srv/getData.php', false);
       req.send(requestBody);
     },
     /**
@@ -510,7 +509,7 @@ export default {
       // parse attributes values
       csvObject.forEach((line) => {
         const properties = {};
-        line.forEach((attribute, i) => {          
+        line.forEach((attribute, i) => {
           const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
           // get wrong locations
@@ -542,7 +541,7 @@ export default {
           newFeature.geometry.coordinates.push(pY);
           // add feature to layer
           geojsonLayer.features.push(newFeature);
-        }                
+        }
       });
       fileName = fileName.replace(' ', '');
       // display layer to map
@@ -574,7 +573,7 @@ export default {
         })
         // show alert
         $('#mainAlert').addClass('show')
-      }      
+      }
     },
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
@@ -619,7 +618,7 @@ export default {
     displayJson(geojsonObject, srs, layerName) {
       let app = this;
       // create style from store styles
-      let format = app.$store.state.uploadFormat;      
+      let format = app.$store.state.uploadFormat;
       let clientStyle = app.$store.state.style.featuresStyle(format);
       // get features from geojson object
       let features = new GeoJSON().readFeatures(geojsonObject);
@@ -702,7 +701,7 @@ export default {
     getFormat(name) {
       let encoding = null;
       if(name.indexOf('json') > -1) {
-        this.$store.commit('setUploadFormat', 'GEOJSON');        
+        this.$store.commit('setUploadFormat', 'GEOJSON');
       } else if(name.indexOf('kml') > -1) {
         this.$store.commit('setUploadFormat', 'KML');
       } else if(name.indexOf('csv') > -1) {
@@ -726,12 +725,12 @@ export default {
         let format = this.$store.state.uploadFormat;
         this.readFile(encoding, file, e => {
           if (format === 'GEOJSON') {
-            app.readJson(file, e);            
+            app.readJson(file, e);
           } else if (format === 'KML') {
             app.readKml(file, e);
           } else if (app.geocodeData) {
             app.csvToApi(e.target.result, file.name);
-          } else {            
+          } else {
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }
         });

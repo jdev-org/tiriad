@@ -3,13 +3,13 @@
     <!-- Popup content-->
     <div>
     <div id="popover-content" class="card" style="display:none;">
-      <div id="popover-text" class="card-body pb-0" style="padding-top: 10px;">        
+      <div id="popover-text" class="card-body pb-0" style="padding-top: 10px;">
         <p class="card-text">Will be replace by features infos.</p>
       </div>
     </div>
     </div>
     <!-- Popup container-->
-    <popup class="p-0" id="popup"/> 
+    <popup class="p-0" id="popup"/>
     <vl-map
       ref="map"
       :load-tiles-while-animating="true"
@@ -69,9 +69,9 @@ export default {
   components: {
     popup
   },
-  props: {    
+  props: {
     allowDragAndDropMap: Boolean
-  },  
+  },
   data() {
     return {
       visible: true,
@@ -111,15 +111,15 @@ export default {
   methods: {
     /**
      * Copy a string to clipboard
-     */    
+     */
     copyPopoverContent() {
       let copyTest = document.queryCommandSupported('copy');
       if(copyTest && document.getElementById('popover-text') ) {
         let text = [];
         this.fieldsPopup.forEach(function(id) {
-          if(id 
-          && id != 'Type' 
-          && document.getElementById(id).innerText 
+          if(id
+          && id != 'Type'
+          && document.getElementById(id).innerText
           && text.indexOf(document.getElementById(id).innerText) < 0){
             text.push(document.getElementById(id).innerText);
           }
@@ -152,12 +152,12 @@ export default {
               name: name,
               style: app.$store.state.style.featuresStyle(format)
             }
-            let newLayer = app.createLayer(layer);            
+            let newLayer = app.createLayer(layer);
             app.$store.state.map.addLayer(newLayer);
           });
         }
-      };          
-      req.open('POST', './php/getLayers.php', true);          
+      };
+      req.open('POST', './srv/getLayers.php', true);          
       req.send();
     },
     /**
@@ -179,8 +179,8 @@ export default {
       };
       // add to popover
       let addToPopover = function(textToDisplay) {
-        // set content text to html template for this component        
-        document.getElementById('popover-text').innerHTML = textToDisplay ? textToDisplay : '<em>Aucune informations disponible.</em>';        
+        // set content text to html template for this component
+        document.getElementById('popover-text').innerHTML = textToDisplay ? textToDisplay : '<em>Aucune informations disponible.</em>';
         // add content to popup import by popup content
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
         // Click event not worked if we add button directly in html card
@@ -197,7 +197,7 @@ export default {
       let props = selectFeature.getProperties();
       let hasPropsFeatures = props.hasOwnProperty('features');
       if(hasPropsFeatures || props) {
-        // get feature to display        
+        // get feature to display
         let feature = hasPropsFeatures ? selectFeature.getProperties().features[0] : selectFeature;
         let position = feature.getGeometry().getCoordinates();
         // locate popover
@@ -207,15 +207,15 @@ export default {
         let textContent = '';
         let value;
         Object.keys(props).forEach(function(propName) {
-            if(typeof(props[propName]) != 'object' 
-            && propName.indexOf('result') < 0 
+            if(typeof(props[propName]) != 'object'
+            && propName.indexOf('result') < 0
             && propName != 'label'
-            && propName != 'latitude' 
+            && propName != 'latitude'
             && propName != 'longitude'
             && propName.indexOf('media') < 0
-            && propName.indexOf('description') < 0 
-            && propName.indexOf('style') < 0 ) {           
-            let toFind =  ['nom', 'adresse', 'ville', 'code_postal', 'code_categorie'];            
+            && propName.indexOf('description') < 0
+            && propName.indexOf('style') < 0 ) {
+            let toFind =  ['nom', 'adresse', 'ville', 'code_postal', 'code_categorie'];
             if(toFind.indexOf(propName) > -1) {
               let newName;
               switch (propName) {
@@ -238,7 +238,7 @@ export default {
                   newName = propName;
               }
               let newNameId = newName.replace(/ /g, '_');
-              value = props[propName].toString();              
+              value = props[propName].toString();
               textContent += controlText(textContent, '<strong>' + newName+ ': </strong><span id='+newNameId+'>' + value) + '</span>';
               app.fieldsPopup.push(newNameId);
             } else {
@@ -248,7 +248,7 @@ export default {
               textContent += controlText(textContent, '<strong>' + propName+ ': </strong><span id='+newPropName+'>' + value) + '</span>';
               app.fieldsPopup.push(newPropName);
             }
-          }       
+          }
         });
         // check if adress exit in popover content
         if(textContent.indexOf('Adresse') < 0) {
@@ -267,12 +267,12 @@ export default {
               if(http.status == 200 && http.responseText && JSON.parse(http.responseText).features.length > 0) {
                 let props = JSON.parse(http.responseText).features[0].properties;
                 // Adresse
-                app.fieldsPopup.push("adresse");               
+                app.fieldsPopup.push("adresse");
                 textContent += controlText(textContent, '<strong>Adresse: </strong><span id="adresse">'+ props.name+'</span>');
                 // post code
                 app.fieldsPopup.push('postcode');
                 textContent += controlText(textContent, '<strong>Code postal: </strong><span id="postcode">'+ props.postcode+'</span>');
-                // city                
+                // city
                 app.fieldsPopup.push("city");
                 textContent += controlText(textContent, '<strong>Ville: </strong><span id="city">'+ props.city+'</span>');
                 addToPopover(textContent.replace('name', 'Nom'));
@@ -284,9 +284,9 @@ export default {
           }
         } else {
           addToPopover(textContent);
-        }        
+        }
       }
-    },  
+    },
     /**
      * Start geolocation trackink
      */
@@ -298,7 +298,7 @@ export default {
       geolocation.on('change:position', function() {
         let p = geolocation.getPosition();
         app.geolocCoordinates.x = p[1];
-        app.geolocCoordinates.y = p[0];        
+        app.geolocCoordinates.y = p[0];
       });
     },
     /**
@@ -338,9 +338,9 @@ export default {
       // add interaction to map
       map.addInteraction(dragAndDropInteraction );
       // event behavior
-      dragAndDropInteraction.on('addfeatures', function(event) {        
+      dragAndDropInteraction.on('addfeatures', function(event) {
         const rg = new RegExp('[^.]+');
-        const name = event.file.name.match(rg)[0];        
+        const name = event.file.name.match(rg)[0];
         const id = app.getRandomId();
         let vectorSource = new VectorSource({
           features: event.features
@@ -355,8 +355,8 @@ export default {
         }));
         if(zoomToExent) {
           map.getView().fit(vectorSource.getExtent());
-        }        
-      });      
+        }
+      });
     },
     /**
      * Add click interraction to display infos into overlay popover
@@ -382,8 +382,8 @@ export default {
               return ft;
             }
         );
-      });      
-    },    
+      });
+    },
     /**
      * Manage TOC visibility
      */
@@ -519,15 +519,15 @@ export default {
       this.setUrlParams()
       // get map from vue instance
       const map = this.getMap();
-      // start tracking      
+      // start tracking
       if (map) {
         // set map to global store
         this.setMap(map);
         // set default view context
-        const { zoom } = this;        
+        const { zoom } = this;
         map.getView().animate({
           zoom
-        });        
+        });
         // now ol.Map instance is ready and we can work with it directly
         this.controls.overView = new OverviewMap({
           collapsed: true,
@@ -537,11 +537,11 @@ export default {
         // event to update TOC content and display new layers layers
         map.getLayers().on('add', function(e) {
           app.$store.commit('setLayerToToc', e.element);
-        });          
+        });
         this.firstLayer.forEach(function(p) {
           let newLayer = app.createLayer(p);
           map.addLayer(newLayer);
-        });        
+        });
         let popupInfo = this.createOverlay();
         this.addClickInteraction(popupInfo);
         // add drag&drop interaction
