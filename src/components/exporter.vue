@@ -36,7 +36,7 @@
         <!--CARD FOOTER-->
         <div class="card-footer headerFooter p-2">
             <!--ACTIONS-->
-            <div class="btn-group justify-content-center col-12" role="group" aria-label="First group">
+            <div class="btn-group justify-content-center col-12" role="group">
                 <!--DOWNLOAD-->
                 <button type="button" @click="mergeLayers(0)" class="btn btn btn-outline-secondary btn-sm mt-2">
                     <i class="far fa-file-alt"></i> Obtenir
@@ -58,7 +58,8 @@ export default {
       data() {
         return {
             layers: this.$store.state.tocLayers,
-            fileName:'data',
+            fileName:'',
+            defaultFileName:'data',
             placeHolder:'Nommer le fichier...',
             actionFailMsg: 'Echec de l\'action, merci de contacter votre assistant.'
         };
@@ -128,19 +129,9 @@ export default {
                     let responseText = JSON.parse(request.responseText);
                     if(responseText && !responseText.success) {
                         // display error message into alert component
-                        $('#mainAlert').removeClass('show');
-                        $('#mainAlert>div').empty();
-                        $('#alertCopyBtn').remove();
+                        $('#alertCloseBtn').trigger('click');
                         $('#mainAlert>div').text(app.actionFailMsg);
-                        $('#mainAlert').removeClass('alert-warning');
-                        $('#mainAlert').addClass('alert-danger');
-                        $('#mainAlert').addClass('show')
-                        $('#alertCloseBtn').click(() => {
-                            $('#mainAlert').removeClass('show');
-                            $('#mainAlert').removeClass('alert-danger');
-                            $('#mainAlert').addClass('alert-warning');
-                            $('#mainAlert>div').empty();
-                        });
+                        $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
                     }
                 }
             }

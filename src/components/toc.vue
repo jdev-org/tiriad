@@ -192,7 +192,8 @@ export default {
       displayImportProj: 'none',
       checkboxChecked: false,
       banReverseResult: '',
-      banAccuracy: 0.7
+      banAccuracy: 0.7,
+      actionFailMsg: 'Echec de l\'action, merci de contacter votre assistant.',
     };
   },
   methods: {
@@ -365,6 +366,7 @@ export default {
      * save file new
      */
     saveFile(geojson, fileName) {
+      let app = this;
       let requestBody = new FormData();      
       fileName += '.json';
       fileName = fileName.replace(/é/g, 'e');
@@ -375,6 +377,17 @@ export default {
 
       let request = new XMLHttpRequest();
       request.open('POST', './php/data.php');
+      request.onreadystatechange = function() {
+          if (request.readyState == 4 && request.status == 200 && request.responseText) {
+              let responseText = JSON.parse(request.responseText);
+              if(responseText && !responseText.success) {
+                  // display error message into alert component
+                  $('#alertCloseBtn').trigger('click');
+                  $('#mainAlert>div').text(app.actionFailMsg);
+                  $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
+              }
+          }
+      }
       request.send(requestBody);
     },
     /**
@@ -538,7 +551,7 @@ export default {
       // display info about wrong location
       if (badScore.length > 0) {
         // clear alert
-        $('#mainAlert>div').text('')
+        $('#alertCloseBtn').trigger('click');
         // Create and insert alert content
         let text = '<strong class="pb-2"> (' + badScore.length + ') Adresses à vérifier :</strong>';
         badScore.forEach((el) => {
