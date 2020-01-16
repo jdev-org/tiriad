@@ -391,7 +391,6 @@ export default {
     },    
     /**
      * Get file from server
-     * TODO : add loader
      */
     getFile(fileName) {
       // get file from server
@@ -722,18 +721,6 @@ export default {
         });
       }
       this.dropFiles = [];
-    },
-    /**
-     * Send some html content to the central modal
-     */
-    displayModal() {
-      $('#tiriadModal>')
-    },
-    /**
-     * Allow user to download selected layers as json file
-     */
-    getLayersAsJson() {
-      
     }
   }
 };

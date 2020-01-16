@@ -47,7 +47,6 @@
 <script>
 /* eslint-disable no-undef */
 import OverviewMap from 'ol/control/OverviewMap';
-import { kebabCase } from 'lodash';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
 import TileLayer from 'ol/layer/Tile'
@@ -423,13 +422,6 @@ export default {
       return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     },
     /**
-     * Return valid vl-geom-* to create VueLayers layer
-     * @return VueLayers component
-     */
-    geometryTypeToCmpName(type) {
-      return `vl-geom-${kebabCase(type.toLowerCase())}`;
-    },
-    /**
      * Display or hide overview map
      */
     overView() {
@@ -511,14 +503,12 @@ export default {
       return layer;
     },
     /**
-     * TODO : get config file from URL
+     * Get config file from URL
      */
-    getUrlParams() {
+    setUrlParams() {
       // get url
       let app = this;
       app.$store.commit('setUrlParams', new URLSearchParams(window.location.href));
-      // get params from urlParams by forEach
-      //console.log(app.$store.state.urlParams);
     },
     /**
      * Fire when VueLayers Map is mounted after map init
@@ -526,7 +516,7 @@ export default {
     onMapMounted() {
       const app = this;
       // read params from url
-      this.getUrlParams()
+      this.setUrlParams()
       // get map from vue instance
       const map = this.getMap();
       // start tracking      
@@ -536,7 +526,7 @@ export default {
         // set default view context
         const { zoom } = this;        
         map.getView().animate({
-          zoom,
+          zoom
         });        
         // now ol.Map instance is ready and we can work with it directly
         this.controls.overView = new OverviewMap({
