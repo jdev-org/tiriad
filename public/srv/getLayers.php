@@ -11,9 +11,10 @@ if(is_dir(SAVE_PATH)){
     if($dh = opendir(SAVE_PATH)){
         // tant que le fichier trouvé n'est pas un répertoire
         while(($file = readdir($dh)) != false){
-            if($file != "." and $file != ".." and !$file.is_dir()){
+            if($file != "." and $file != ".." and !is_dir($file)){
                 // read files infos
                 $path = SAVE_PATH. DIRECTORY_SEPARATOR .$file;
+                //TODO only for geojson, kml
                 if(file_get_contents($path) != '') {
                     // add files info to array
                     $layers[] = array(
