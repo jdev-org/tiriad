@@ -10,7 +10,7 @@ if (isset($_FILES['data'])) {
 
   //if there was an error uploading the file
   if ($_FILES["data"]["error"] > 0) {
-    echo '{"status":failed, "message":.$_FILES["data"]["error"].}';
+    echo '{"success":false, "message":.$_FILES["data"]["error"].}';
   }//TODO else if size to big
   else {
     // Read line by ligne
@@ -19,7 +19,7 @@ if (isset($_FILES['data'])) {
       $headers = fgetcsv($fileHandle,"1024",";");
 
       if($headers == FALSE || $headers == NULL){
-        echo '{"status":failed, "message":"Empty file"}';
+        echo '{"success":false, "message":"Empty file"}';
       }
       else{
         $lowerCaseHeaders = array_map('strtolower',$headers);
@@ -30,9 +30,10 @@ if (isset($_FILES['data'])) {
         $pays = array_search(strtolower('pays'), $lowerCaseHeaders);
 
         if( $adresse == FALSE || $code_postal == FALSE || $ville == FALSE){
-          echo '{"status":failed, "message":"Somme headers information are missing at least nom;code_categorie;adresse;code_postale;ville"}';
+          echo '{"success":false, "message":"Some header informations are missing at least \'nom;code_categorie;adresse;code_postale;ville\' are required"}';
         }else{
           $json = array();
+          $errorsGeocoding = array();
 
           $context_http = stream_context_create(
             array(
@@ -54,17 +55,16 @@ if (isset($_FILES['data'])) {
             if($appel_api == FALSE){
                $errorsGeocoding[] = array_combine($headers, $line);
             }else{
-
               $resultat = json_decode($appel_api);
 
               // Clean results and replace properties by csv informations if address found
-              if($resultat->{'features'}[0]->{'type'} == 'Feature'){
+              if($resultat->{'features'} && $resultat->{'features'}[0]->{'type'} == 'Feature'){
                 $resultat->{'features'}[0]->{'properties'} = array_combine($headers, $line);
 
-                if($nbResultat==0){
-                  $json=$resultat;
+                if($nbResultat == 0){
+                  $json['geocoded'] = $resultat;
                 }else{
-                  $json->{'features'}[] = $resultat->{'features'}[0];
+                  $json['geocoded']->{'features'}[] = $resultat->{'features'}[0];
                 }
                 $nbResultat++;
 
@@ -73,33 +73,18 @@ if (isset($_FILES['data'])) {
               }
             }
           }
-          fclose($fileHandle);
 
+          fclose($fileHandle);
+          $json['notgeocoded'] = $errorsGeocoding;
           echo json_encode($json, JSON_NUMERIC_CHECK);
           }
         }
       }else{
-        echo '{"status":failed, "message":"could not read file"}';
+        echo '{"success":false, "message":"could not read file"}';
       }
     }
 
-  // $lines = explode("\r\n", $data); // split the string by new lines
-  // foreach($lines as $line){ // Loop over each line
-  //     $column = explode(",", $line); // split the line in 'columns'
-  //     $name = $column[0];
-  //     $street = $column[1];
-  // }
-
-  // Géocodage
-  // foreach($adresses as $adresse)
-  // {
-  //     $params = http_build_query(array('q' => $adresse, 'format' => 'json'));
-  //     $appel_api = file_get_contents($url.$params);
-  //     $resultats = json_decode($appel_api);
-  //     echo var_export($resultats, true);
-  // }
-
 }else{
-  echo '{"status":failed, "error":"Fail to load data from call"}';
+  echo '{"success":false, "error":"Fail to load data from call"}';
 }
 ?>

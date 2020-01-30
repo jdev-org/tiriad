@@ -8,9 +8,13 @@ $fichier=$_POST['filename'];
 //get json content
 $geojsonStr=$_POST['content'];
 // WP
+$isWP=isset($_POST['wp']);
 
 // get folder to save file
 $destFolder=SAVE_PATH;
+if($isWP){
+  $destFolder=EXPORT_PATH;
+}
 
 $isSaved = false;
 

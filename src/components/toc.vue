@@ -606,6 +606,7 @@ export default {
      * From csv read as String, transform it as file and post it to get geocoding values
      */
     csvToNominatim(csvString, fileName) {
+      // TODO add a waiting modal box
       const requestBody = new FormData();
       requestBody.append(
         'data',
@@ -617,8 +618,33 @@ export default {
         body: requestBody
       })
         .then((response) => {return response.json().then((json) => {
-          fileName = fileName.replace('.csv', '');
-          this.displayJson(json, 'EPSG:4326',fileName);
+          if(json && !json.geocoded) {
+              // display error message into alert component
+              $('#alertCloseBtn').trigger('click');
+              $('#mainAlert>div').text(json.message);
+              $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
+            }else{
+              fileName = fileName.replace('.csv', '');
+              this.displayJson(json.geocoded, 'EPSG:4326',fileName);
+
+              // show not geocoded adress
+              // TOOD change this by a function
+              if(json.notgeocoded){
+                // clear alert
+                $('#alertCloseBtn').trigger('click');
+                // Create and insert alert content
+                let text = '<strong class="pb-2"> (' + json.notgeocoded.length + ') Adresses à vérifier :</strong>';
+
+                json.notgeocoded.forEach((el) => {
+                  let elSpan = '<br> <span>' + el.nom + ' - ' + el.adresse +'</span>'
+                  text += el.nom != '' ? elSpan : ''
+                });
+                // add content
+                $('#mainAlert>div').append(text);
+                // show alert
+                $('#mainAlert').addClass('show');
+              }
+            }
         })
       })
     },

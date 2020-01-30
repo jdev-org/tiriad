@@ -132,6 +132,7 @@ export default {
             fileName = fileName.replace(/ /g, '_');
             requestBody.append('filename', fileName);
             requestBody.append('content', geojson);
+            requestBody.append('wp', true);
             let request = new XMLHttpRequest();
             request.onreadystatechange = function() {
                 if (request.readyState == 4 && request.status == 200 && request.responseText) {
@@ -141,6 +142,11 @@ export default {
                         $('#alertCloseBtn').trigger('click');
                         $('#mainAlert>div').text(app.actionFailMsg);
                         $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
+                    }else{
+                      // display error message into alert component
+                      $('#alertCloseBtn').trigger('click');
+                      $('#mainAlert>div').text('Fichier sauvegardé ' + responseText.filepath);
+                      $('#mainAlert').attr('class', "alert alert-dismissible fade show");
                     }
                 }
             }
