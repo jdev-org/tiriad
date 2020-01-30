@@ -2,5 +2,6 @@
     "banQuality": 0.7,
     "siteUrl": "http://distillerie-vercors.com",
     "logoUrl": "http://distillerie-vercors.com/wp-content/uploads/2018/05/Distillerie_logo_brun_corail-e1527681979704.png",
-    "search": "nominatim"
+    "search": "nominatim",
+    "osmGeocodage": true
 }

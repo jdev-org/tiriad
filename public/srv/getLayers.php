@@ -1,21 +1,25 @@
 
 <?php
-$dir = "../data/layers";
-$publicPath = "./data/layers";
+require 'const.php';
+
+// define layers array
 $layers = array();
+
 // check if dir path is a directory
-if(is_dir($dir)){
+if(is_dir(SAVE_PATH)){
     // get files from dir
-    if($dh = opendir($dir)){
+    if($dh = opendir(SAVE_PATH)){
+        // tant que le fichier trouvé n'est pas un répertoire
         while(($file = readdir($dh)) != false){
-            if($file != "." and $file != ".."){
+            if($file != "." and $file != ".." and !is_dir($file)){
                 // read files infos
-                $path = $dir. DIRECTORY_SEPARATOR .$file;
+                $path = SAVE_PATH. DIRECTORY_SEPARATOR .$file;
+                //TODO only for geojson, kml
                 if(file_get_contents($path) != '') {
                     // add files info to array
                     $layers[] = array(
                         'name' => $file,
-                        'path' => $publicPath. DIRECTORY_SEPARATOR .$file
+                        'path' => SAVE_PATH. DIRECTORY_SEPARATOR .$file
                         //'content' => file_get_contents($path)
                     );
                 }

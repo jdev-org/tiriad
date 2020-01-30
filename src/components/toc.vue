@@ -22,6 +22,7 @@
         >
           <div class="card-body">
             <ul id="layersList" class="list-group">
+              <!--Create toc content for each layers-->
               <li class="list-group-item col-12" v-for="layer in layers" :key="layer.id">
                 <!-- layers options -->
                 <div class="btn-group">
@@ -40,7 +41,7 @@
                     :value="layer.getProperties().id"
                   >
                     <i class="fa fa-save" activate="false"></i>
-                  </button>                  
+                  </button>
                   <button
                     type="button"
                     class="btn btn-sm py-0 px-2"
@@ -157,6 +158,7 @@
           </div>
         </div>
       </div>
+      <exporter/>
     </div>
   </div>
 </template>
@@ -166,6 +168,8 @@ import Papa from 'papaparse';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import {GeoJSON, KML} from 'ol/format';
+import exporter from './exporter'
+
 // bootstrap tooltips
 $(document).ready(() => {
   $('[data-toggle="tooltip"]').tooltip();
@@ -173,7 +177,7 @@ $(document).ready(() => {
 
 export default {
   name: 'toc',
-  components: {},
+  components: {exporter},
   data() {
     return {
       dropFiles: [],
@@ -188,7 +192,8 @@ export default {
       displayImportProj: 'none',
       checkboxChecked: false,
       banReverseResult: '',
-      banAccuracy: 0.7
+      banAccuracy: 0.7,
+      actionFailMsg: 'Echec de l\'action, merci de contacter votre assistance.',
     };
   },
   methods: {
@@ -207,6 +212,9 @@ export default {
         name = layer.getProperties()['name'];
         if(source && name) {
           json = (new GeoJSON).writeFeatures(source.getFeatures());
+          if(!JSON.parse(json).features.length) {
+            return
+          }
           this.saveFile(json, name);
         }
       }
@@ -304,7 +312,7 @@ export default {
     destroyLayer(e) {
       let isBtn = e.target.type == 'button' ? true : false;
       let layerId = isBtn ? e.target.value : e.target.parentElement.value;
-      // remove layer from file system      
+      // remove layer from file system
       let name = this.getLayerById(layerId).getProperties()['name'];
       this.removeFile(name);
       // remove layer
@@ -355,22 +363,33 @@ export default {
         reader.readAsText(blob,encoding);
       } else {
         reader.readAsText(blob);
-      }      
+      }
     },
     /**
      * save file new
-     * TODO : add loader
      */
     saveFile(geojson, fileName) {
-      let requestBody = new FormData();      
+      let app = this;
+      let requestBody = new FormData();
       fileName += '.json';
       fileName = fileName.replace(/é/g, 'e');
       fileName = fileName.replace(/ /g, '_');
-      requestBody.append('filename', fileName);      
+      requestBody.append('filename', fileName);
       requestBody.append('content', geojson);
 
       let request = new XMLHttpRequest();
-      request.open('POST', './php/data.php');
+      request.open('POST', './srv/storeData.php');
+      request.onreadystatechange = function() {
+          if (request.readyState == 4 && request.status == 200 && request.responseText) {
+              let responseText = JSON.parse(request.responseText);
+              if(responseText && !responseText.success) {
+                  // display error message into alert component
+                  $('#alertCloseBtn').trigger('click');
+                  $('#mainAlert>div').text(app.actionFailMsg);
+                  $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
+              }
+          }
+      }
       request.send(requestBody);
     },
     /**
@@ -382,12 +401,11 @@ export default {
       let fileName = layerName + '.json';
       requestBody.append('filename', fileName.replace(/ /g, '_'));
       let request = new XMLHttpRequest();
-      request.open('POST', './php/removeFile.php');
+      request.open('POST', './srv/removeFile.php');
       request.send(requestBody);
-    },    
+    },
     /**
      * Get file from server
-     * TODO : add loader
      */
     getFile(fileName) {
       // get file from server
@@ -404,7 +422,7 @@ export default {
       };
       let requestBody = new FormData();
       requestBody.append('filename', fileName);
-      req.open('POST', './php/getData.php', false);
+      req.open('POST', './srv/getData.php', false);
       req.send(requestBody);
     },
     /**
@@ -429,6 +447,7 @@ export default {
         document.body.removeChild(textArea);
       }
     },
+
     /**
      * Transform csv as object to geojson
      */
@@ -491,7 +510,7 @@ export default {
       // parse attributes values
       csvObject.forEach((line) => {
         const properties = {};
-        line.forEach((attribute, i) => {          
+        line.forEach((attribute, i) => {
           const name = colName[i].replace(' ', '_');
           properties[name] = attribute;
           // get wrong locations
@@ -523,7 +542,7 @@ export default {
           newFeature.geometry.coordinates.push(pY);
           // add feature to layer
           geojsonLayer.features.push(newFeature);
-        }                
+        }
       });
       fileName = fileName.replace(' ', '');
       // display layer to map
@@ -535,7 +554,7 @@ export default {
       // display info about wrong location
       if (badScore.length > 0) {
         // clear alert
-        $('#mainAlert>div').text('')
+        $('#alertCloseBtn').trigger('click');
         // Create and insert alert content
         let text = '<strong class="pb-2"> (' + badScore.length + ') Adresses à vérifier :</strong>';
         badScore.forEach((el) => {
@@ -555,12 +574,12 @@ export default {
         })
         // show alert
         $('#mainAlert').addClass('show')
-      }      
+      }
     },
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
      */
-    csvToApi(csvString, fileName) {
+    csvToDataGouv(csvString, fileName) {
       const requestBody = new FormData();
       const app = this;
       requestBody.append('delimiter', ';');
@@ -584,6 +603,63 @@ export default {
         });
     },
     /**
+     * From csv read as String, transform it as file and post it to get geocoding values
+     */
+    csvToNominatim(csvString, fileName) {
+      // TODO add a waiting modal box
+      const requestBody = new FormData();
+      requestBody.append(
+        'data',
+        new Blob([csvString], { type: 'text/csv; charset=utf-8' }),
+        'upload.csv'
+      );
+      fetch('srv/geocode.php', {
+        method: 'POST',
+        body: requestBody
+      })
+        .then((response) => {return response.json().then((json) => {
+          if(json && !json.geocoded) {
+              // display error message into alert component
+              $('#alertCloseBtn').trigger('click');
+              $('#mainAlert>div').text(json.message);
+              $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
+            }else{
+              fileName = fileName.replace('.csv', '');
+              this.displayJson(json.geocoded, 'EPSG:4326',fileName);
+
+              // show not geocoded adress
+              // TOOD change this by a function
+              if(json.notgeocoded){
+                // clear alert
+                $('#alertCloseBtn').trigger('click');
+                // Create and insert alert content
+                let text = '<strong class="pb-2"> (' + json.notgeocoded.length + ') Adresses à vérifier :</strong>';
+
+                json.notgeocoded.forEach((el) => {
+                  let elSpan = '<br> <span>' + el.nom + ' - ' + el.adresse +'</span>'
+                  text += el.nom != '' ? elSpan : ''
+                });
+                // add content
+                $('#mainAlert>div').append(text);
+                // show alert
+                $('#mainAlert').addClass('show');
+              }
+            }
+        })
+      })
+    },
+    /**
+    / From csv to geocode json object
+    */
+    csvToApi(csvString, filename){
+      // To do check if CSV contains pays field
+      if(!this.$store.state.config.osmGeocodage){
+        this.csvToDataGouv(csvString, filename);
+      }else{
+        this.csvToNominatim(csvString, filename);
+      }
+    },
+    /**
      * Reproject features array
      */
     reprojectFeatures(featuresArray, srs) {
@@ -600,7 +676,7 @@ export default {
     displayJson(geojsonObject, srs, layerName) {
       let app = this;
       // create style from store styles
-      let format = app.$store.state.uploadFormat;      
+      let format = app.$store.state.uploadFormat;
       let clientStyle = app.$store.state.style.featuresStyle(format);
       // get features from geojson object
       let features = new GeoJSON().readFeatures(geojsonObject);
@@ -683,7 +759,7 @@ export default {
     getFormat(name) {
       let encoding = null;
       if(name.indexOf('json') > -1) {
-        this.$store.commit('setUploadFormat', 'GEOJSON');        
+        this.$store.commit('setUploadFormat', 'GEOJSON');
       } else if(name.indexOf('kml') > -1) {
         this.$store.commit('setUploadFormat', 'KML');
       } else if(name.indexOf('csv') > -1) {
@@ -707,12 +783,12 @@ export default {
         let format = this.$store.state.uploadFormat;
         this.readFile(encoding, file, e => {
           if (format === 'GEOJSON') {
-            app.readJson(file, e);            
+            app.readJson(file, e);
           } else if (format === 'KML') {
             app.readKml(file, e);
           } else if (app.geocodeData) {
             app.csvToApi(e.target.result, file.name);
-          } else {            
+          } else {
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }
         });
