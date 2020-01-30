@@ -447,6 +447,7 @@ export default {
         document.body.removeChild(textArea);
       }
     },
+
     /**
      * Transform csv as object to geojson
      */
@@ -578,7 +579,7 @@ export default {
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
      */
-    csvToApi(csvString, fileName) {
+    csvToDataGouv(csvString, fileName) {
       const requestBody = new FormData();
       const app = this;
       requestBody.append('delimiter', ';');
@@ -600,6 +601,37 @@ export default {
           fileName = fileName.replace('.csv', '');
           app.csvToJsonPoints(fileName, csvParsed.data, 'EPSG:4326');
         });
+    },
+    /**
+     * From csv read as String, transform it as file and post it to get geocoding values
+     */
+    csvToNominatim(csvString, fileName) {
+      const requestBody = new FormData();
+      requestBody.append(
+        'data',
+        new Blob([csvString], { type: 'text/csv; charset=utf-8' }),
+        'upload.csv'
+      );
+      fetch('srv/geocode.php', {
+        method: 'POST',
+        body: requestBody
+      })
+        .then((response) => {return response.json().then((json) => {
+          fileName = fileName.replace('.csv', '');
+          this.displayJson(json, 'EPSG:4326',fileName);
+        })
+      })
+    },
+    /**
+    / From csv to geocode json object
+    */
+    csvToApi(csvString, filename){
+      // To do check if CSV contains pays field
+      if(!this.$store.state.config.osmGeocodage){
+        this.csvToDataGouv(csvString, filename);
+      }else{
+        this.csvToNominatim(csvString, filename);
+      }
     },
     /**
      * Reproject features array

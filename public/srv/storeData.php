@@ -7,6 +7,8 @@ header('Content-type: application/json',true);
 $fichier=$_POST['filename'];
 //get json content
 $geojsonStr=$_POST['content'];
+// WP
+
 // get folder to save file
 $destFolder=SAVE_PATH;
 
