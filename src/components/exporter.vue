@@ -82,13 +82,13 @@ export default {
             let match = this.matchInputLayers(selects);
             let JSONLayer = this.manyToOneLayer(match);
             let name = this.fileName ? this.fileName : this.defaultFileName;
-
-            if(!JSON.parse(JSONLayer).features.length) {
+            if(!JSONLayer.features.length) {
                 $('#alertCloseBtn').trigger('click');
                 $('#mainAlert>div').text(this.noDataMsg);
                 $('#mainAlert').attr('class', "alert alert-dismissible fade alert-warning show");
                 return
             }
+            JSONLayer = JSON.stringify(JSONLayer);
 
 
             switch (actionNumber) {
@@ -119,7 +119,15 @@ export default {
             layers.forEach(layer => {
                 features = features.concat(layer.getSource().getFeatures());
             });
-            return (new GeoJSON).writeFeatures(features);
+            let jsonLayer = JSON.parse((new GeoJSON).writeFeatures(features));
+            jsonLayer['crs'] = {
+                type:'name',
+                properties: {
+                    name:'EPSG:3857'
+                }
+            };
+            jsonLayer['name'] = this.fileName ? this.fileName : this.defaultFileName;
+            return jsonLayer;
         },
         /**
          * Save file to a specific path get from config
