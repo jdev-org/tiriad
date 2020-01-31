@@ -19,7 +19,7 @@ if(is_dir($SAVE_PATH)){
                     // add files info to array
                     $layers[] = array(
                         'name' => $file,
-                        'path' => $SAVE_PATH. DIRECTORY_SEPARATOR .$file
+                        'path' => REQUEST_PATH. DIRECTORY_SEPARATOR .$file
                         //'content' => file_get_contents($path)
                     );
                 }
