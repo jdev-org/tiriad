@@ -2,7 +2,7 @@
 
 require 'const.php';
 header('Content-type: application/json',true);
-
+$SAVE_PATH = SERVER_PATH.REQUEST_PATH;
 //get filename
 $fichier=$_POST['filename'];
 //get json content
@@ -11,7 +11,7 @@ $geojsonStr=$_POST['content'];
 $isWP=isset($_POST['wp']);
 
 // get folder to save file
-$destFolder=SAVE_PATH;
+$destFolder=$SAVE_PATH;
 if($isWP){
   $destFolder=EXPORT_PATH;
 }
