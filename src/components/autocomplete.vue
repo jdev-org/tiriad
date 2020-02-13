@@ -5,7 +5,7 @@
     size="is-mobile"
     class="col-12 pr-0 col-sm-6 col-md-3 autocomplete-field"
     v-model="name"
-    value="hello"
+    value="address"
     :data="data"
     :placeholder="placeHolder"
     :field="field"
@@ -15,11 +15,8 @@
     id="autocomplete-box"
   >
   <template slot-scope="props">
-    <span v-if="api==='ban'">
-      {{ props.option.properties.label }}
-    </span>
-    <span v-if="api==='nominatim'">
-      {{ props.option.display_name }}
+    <span>
+      {{ formatList(props.option.properties) }}
     </span>
   </template>
 
@@ -67,8 +64,8 @@ export default {
       data: [],
       isFetching: false,
       name: '',
-      apiBan: 'https://api-adresse.data.gouv.fr/search/?q=',
-      apiNominatim: 'https://nominatim.openstreetmap.org/search.php?format=json&limit=5&q=',
+      apiBan: 'https://api-adresse.data.gouv.fr/search/?limit=5&q=',
+      apiPhoton: 'https://photon.komoot.de/api/?limit=5&q=',
       layer: '',
       isDisplay: 'none',
       field:'label',
@@ -76,6 +73,18 @@ export default {
     };
   },
   methods: {
+    formatList(props) {
+      let response = props.label;
+      if(this.api === 'photon') {
+        response = ` 
+          ${props.street ? props.street + ',':''} 
+          ${props.city ? props.city : props.name},
+          ${props.state ? props.state + ',':''}
+          ${props.country ? props.country:''}
+        `;
+      }
+      return response;
+    },
     /**
      * Animation to display search adress result
      * @param map - ol.Map
@@ -160,13 +169,9 @@ export default {
         let map = this.$store.state.map;
         let xy;
         let preprojectGeom;
-        if(this.api === 'nominatim') {
-          xy = this.xyStringToArray(selected.lon + ',' + selected.lat);
-          selected.label = selected['display_name'];
-        } else {
-          xy = selected.geometry.coordinates;
-          selected.label = selected.properties.label;
-        }
+        xy = selected.geometry.coordinates;
+        selected.label = this.api === 'photon' ? selected.properties.city : selected.properties.label;
+
         if(xy.length > 0) {
           preprojectGeom = new Point(transform(xy, 'EPSG:4326', 'EPSG:3857'));
         }
@@ -228,13 +233,12 @@ export default {
       this.data = [];
       // start loader animation
       this.isFetching = true;
-      // get api name to use from input. ex : ban/paris or nominatim/paris.
+      // get api name to use from input. ex : ban/paris or photon/paris.
       let text = this.name.split('/');
       let request = text.length > 1 ? text[1] : text[0];
       this.api = text.length > 1 ? text[0] : this.getParam('search');
-      
-      if(this.api === "nominatim") {
-        url =  this.apiNominatim + request;
+      if(this.api === "photon") {
+        url =  this.apiPhoton + request;
       } else {
         url = this.apiBan + request;
       }
@@ -243,12 +247,9 @@ export default {
         // promise
         .then(({ data }) => {
           // load result to autocomplete form
-          if(this.api != 'ban') { // nominatim
-            data.forEach(item => this.data.push(item));
-          } else { // ban
+          if(data.features) { 
             data.features.forEach(item => this.data.push(item));
           }
-          
           // stop loader animation
           this.isFetching = false;
         })

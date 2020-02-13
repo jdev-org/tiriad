@@ -10,7 +10,7 @@ Tiriad est un outil libre (open source). Le code source est disponible gratuitem
 ## Les outils
 
 ### Rechercher un lieu
-Tiriad vous permettra de recherche une ville ou une adresse. Grâce à Nominatim et à la Base d'Adresse Nationale, vous pourrez choisir de rechercher des endroits à l'échelle nationale ou internationale.
+Tiriad vous permettra de recherche une ville ou une adresse. Grâce à photon (basé sur OSM) et à la Base d'Adresse Nationale, vous pourrez choisir de rechercher des endroits à l'échelle nationale ou internationale.
 
 Cas d'usage : 
 ```
@@ -70,7 +70,7 @@ logourl -> le logo affiché en bas à droite sur la carte
 search -> correspond à l'api appeler lors d'une recherche d'adress 
 
           soit ban pour une recherche sur l'api BAN : https://geo.api.gouv.fr/adresse
-          soit nominatim pour une recherche OSM nomination :  https://nominatim.openstreetmap.org/
+          soit photon pour une recherche OSM :  https://photon.komoot.de/
 
 
 # Compilation et installation
