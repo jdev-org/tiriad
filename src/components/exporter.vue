@@ -154,7 +154,7 @@ export default {
                       // display error message into alert component
                       $('#alertCloseBtn').trigger('click');
                       $('#mainAlert>div').text('Fichier sauvegardé ' + responseText.filepath);
-                      $('#mainAlert').attr('class', "alert alert-dismissible fade show");
+                      $('#mainAlert').attr('class', "alert alert-dismissible fade alert-primary show");
                     }
                 }
             }
