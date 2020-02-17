@@ -50,7 +50,8 @@ export const store = new Vuex.Store({
     firstLayersNames: [],
     config: {},
     logoUrl: '',
-    urlParams: {}
+    urlParams: {},
+    clicked: []
   },
   mutations: {
     /**
@@ -206,10 +207,23 @@ export const store = new Vuex.Store({
       };
       xmlhttp.send(null);       
     },
+    /**
+     * get params from config as json
+     * @param {object} state 
+     * @param {object} params from json parsed
+     */
     setUrlParams(state, params) {   
       params.forEach(el => {
         state.urlParams[el[0]] = el[1]
       })
+    },
+    /**
+     * Array of features selected from click
+     * @param {object} state 
+     * @param {array} clicked 
+     */
+    setClicked(state, clicked) {
+      state.clicked = clicked;
     }
   },
   getters: {
@@ -226,6 +240,7 @@ export const store = new Vuex.Store({
     getUploadFormat: state => state.uploadFormat,
     getfirstLayersNames: state => state.firstLayersNames,
     getConfig: state => state.config,
-    getUrlParams: state => state.urlParams
+    getUrlParams: state => state.urlParams,
+    getClicked: state => state.clicked
   },
 });
