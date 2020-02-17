@@ -105,7 +105,10 @@ export default {
       }],
       geolocCoordinates:{},
       popupCount: 0,
-      fieldsPopup: []
+      fieldsPopup: [],
+      /* POPUP */
+      clickedIndex: 0,
+      maxClickedIndex: 0
     };
   },
   methods: {
@@ -160,6 +163,16 @@ export default {
       req.open('POST', './srv/getLayers.php', true);          
       req.send();
     },
+    nextClicked() {
+      let idx = this.clickedIndex === this.maxClickedIndex ? 0 : this.clickedIndex + 1;
+      this.showOverlay(this.$store.state.clicked[idx]);
+      this.clickedIndex = idx;
+    },
+    previousClicked() {
+      let idx = this.clickedIndex === 0 ? this.maxClickedIndex : this.clickedIndex - 1;
+      this.showOverlay(this.$store.state.clicked[idx]);
+      this.clickedIndex = idx;
+    },
     /**
      * Overlay content elements
      * @param e - event
@@ -185,12 +198,33 @@ export default {
         document.getElementById('popup-content').innerHTML = $('#popover-content').html();
         // Click event not worked if we add button directly in html card
         // So, we create the button to copy text here with jquery
-        let btn = '<button style="float:right; color:rgba(26, 112, 175, 1);"' +
-        'type="button" class="btn" data-toggle="tooltip" data-html="true" title="Copier le texte">' +
+        let copyBtn = '<button style="float:right; color:rgba(26, 112, 175, 1);"' +
+        'id="copyBtn" type="button" class="btn" data-toggle="tooltip" data-html="true" title="Copier le texte">' +
         '<i class="fas fa-copy"></i></button>';
-        $('#popup-content').append(btn);
-        $('#popup-content').on("click", "button", function(){
-         app.copyPopoverContent();
+        
+        if(this.$store.state.clicked.length > 1) {
+          let previousBtn = '<button style="color:rgba(26, 112, 175, 1);"' +
+              'id="previousPopup" type="button" class="btn" data-toggle="tooltip" data-html="true" title="suivant">' +
+                '<i class="fas fa-caret-left"></i>' +
+              '</button>';
+          let nextBtn = '<button style="color:rgba(26, 112, 175, 1);"' +
+              'id="nextPopup" type="button" class="btn" data-toggle="tooltip" data-html="true" title="suivant">' +
+                '<i class="fas fa-caret-right"></i>' +
+              '</button>';        
+          
+          $('#popup-content').append(previousBtn);
+          // events
+          $('#popup-content').append(nextBtn);
+          $('#previousPopup').on("click", function(e){
+            app.previousClicked();
+          });
+          $('#nextPopup').on("click", function(e){
+            app.nextClicked();
+          });
+        }
+        $('#popup-content').append(copyBtn);
+        $('#copyBtn').on("click", function(){
+          app.copyPopoverContent();
         });
       };
       // get properties
@@ -201,7 +235,9 @@ export default {
         let feature = hasPropsFeatures ? selectFeature.getProperties().features[0] : selectFeature;
         let position = feature.getGeometry().getCoordinates();
         // locate popover
-        popup.setPosition(position);
+        if(popup){
+          popup.setPosition(position);
+        }
         let props = feature.getProperties();
         // create popup content
         let textContent = '';
@@ -368,20 +404,29 @@ export default {
       // event to hide or show popover
       this.$store.state.map.on('click', function(evt) {
         popup.setPosition(undefined);
-        app.$store.state.map.forEachFeatureAtPixel(
-            evt.pixel,
-            function(ft){
-              let properties = ft.getProperties();
-              if(properties.features && properties.features.length < 2){
-                app.showOverlay(ft, popup);
-              } else if(properties){
-                app.showOverlay(ft, popup);
-              } else {
-                popup.setPosition(undefined);
-              }
-              return ft;
+        var features = app.$store.state.map.getFeaturesAtPixel(evt.pixel);
+        features = features ? features : [];
+        app.maxClickedIndex = features.length - 1;
+        if(features.length > 1) {
+          app.$store.commit('setClicked', features);
+          app.showOverlay(features[0], popup);
+        } else if (features.length) {
+          app.showOverlay(features[0], popup);
+        }
+        
+        /*else if(features.lengt) {
+          features.forEach(ft => {
+            let properties = ft.getProperties();
+            if(properties.features && properties.features.length < 2){
+              app.showOverlay(ft, popup);
+            } else if(properties){
+              app.showOverlay(ft, popup);
+            } else {
+              popup.setPosition(undefined);
             }
-        );
+            return ft;
+          })
+        }*/
       });
     },
     /**
