@@ -202,7 +202,7 @@ export default {
         'id="copyBtn" type="button" class="btn" data-toggle="tooltip" data-html="true" title="Copier le texte">' +
         '<i class="fas fa-copy"></i></button>';
         
-        if(this.$store.state.clicked.length > 1) {
+        if(app.$store.state.clicked.length > 1) {
           let previousBtn = '<button style="color:rgba(26, 112, 175, 1);"' +
               'id="previousPopup" type="button" class="btn" data-toggle="tooltip" data-html="true" title="suivant">' +
                 '<i class="fas fa-caret-left"></i>' +
@@ -210,10 +210,8 @@ export default {
           let nextBtn = '<button style="color:rgba(26, 112, 175, 1);"' +
               'id="nextPopup" type="button" class="btn" data-toggle="tooltip" data-html="true" title="suivant">' +
                 '<i class="fas fa-caret-right"></i>' +
-              '</button>';        
-          
+              '</button>';
           $('#popup-content').append(previousBtn);
-          // events
           $('#popup-content').append(nextBtn);
           $('#previousPopup').on("click", function(e){
             app.previousClicked();
@@ -222,6 +220,7 @@ export default {
             app.nextClicked();
           });
         }
+        // add copy btn
         $('#popup-content').append(copyBtn);
         $('#copyBtn').on("click", function(){
           app.copyPopoverContent();
@@ -407,26 +406,10 @@ export default {
         var features = app.$store.state.map.getFeaturesAtPixel(evt.pixel);
         features = features ? features : [];
         app.maxClickedIndex = features.length - 1;
-        if(features.length > 1) {
-          app.$store.commit('setClicked', features);
-          app.showOverlay(features[0], popup);
-        } else if (features.length) {
+        app.$store.commit('setClicked', features);
+        if(features.length) {
           app.showOverlay(features[0], popup);
         }
-        
-        /*else if(features.lengt) {
-          features.forEach(ft => {
-            let properties = ft.getProperties();
-            if(properties.features && properties.features.length < 2){
-              app.showOverlay(ft, popup);
-            } else if(properties){
-              app.showOverlay(ft, popup);
-            } else {
-              popup.setPosition(undefined);
-            }
-            return ft;
-          })
-        }*/
       });
     },
     /**
