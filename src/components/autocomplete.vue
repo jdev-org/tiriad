@@ -42,10 +42,11 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
-import { transform } from 'ol/proj';
+import { transform, fromLonLat } from 'ol/proj';
 import Circle from 'ol/style/Circle';
 import Stroke from 'ol/style/Stroke';
 import { easeOut } from 'ol/easing';
+
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -239,6 +240,10 @@ export default {
       this.api = text.length > 1 ? text[0] : this.getParam('search');
       if(this.api === "photon") {
         url =  this.apiPhoton + request;
+        // add prirority from view center
+        let center = this.$store.state.map.getView().getCenter();
+        center = transform(center, 'EPSG:3857', 'EPSG:4326');
+        url += `&lon=${center[0]}&lat=${center[1]}`;
       } else {
         url = this.apiBan + request;
       }
