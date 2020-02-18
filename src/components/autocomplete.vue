@@ -66,7 +66,7 @@ export default {
       isFetching: false,
       name: '',
       apiBan: 'https://api-adresse.data.gouv.fr/search/?limit=5&q=',
-      apiPhoton: 'https://photon.komoot.de/api/?limit=5&q=',
+      apiPhoton: 'https://photon.komoot.de/api/?limit=5&location_bias_scale=2.5&q=',
       layer: '',
       isDisplay: 'none',
       field:'label',
