@@ -213,10 +213,10 @@ export default {
               '</button>';
           $('#popup-content').append(previousBtn);
           $('#popup-content').append(nextBtn);
-          $('#previousPopup').on("click", function(e){
+          $('#previousPopup').on("click", function(){
             app.previousClicked();
           });
-          $('#nextPopup').on("click", function(e){
+          $('#nextPopup').on("click", function(){
             app.nextClicked();
           });
         }

@@ -42,7 +42,7 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
-import { transform, fromLonLat } from 'ol/proj';
+import { transform } from 'ol/proj';
 import Circle from 'ol/style/Circle';
 import Stroke from 'ol/style/Stroke';
 import { easeOut } from 'ol/easing';
