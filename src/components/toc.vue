@@ -28,6 +28,7 @@
                 <div class="btn-group">
                   <button
                     type="button"
+                    title="Cacher/Montrer la couche de données"
                     class="btn btn-sm py-0 px-2"
                     @click="displayLayer"
                     :value="layer.getProperties().id"
@@ -36,6 +37,7 @@
                   </button>
                   <button v-if="layer.getSource().getFeatures"
                     type="button"
+                    title="Sauvegarder les données pour les retrouver à la prochaine connexion"
                     class="btn btn-sm py-0 px-2"
                     @click="saveLayer"
                     :value="layer.getProperties().id"
@@ -45,6 +47,7 @@
                   <button
                     type="button"
                     class="btn btn-sm py-0 px-2"
+                    title="Supprimer les données de la carte"
                     @click="destroyLayer"
                     :value="layer.getProperties().id"
                   >
@@ -52,6 +55,7 @@
                   </button>
                   <button v-if="layer.getSource().getExtent"
                     type="button"
+                    title="Zoomer pour voir l'ensemble des données de cette couche"
                     class="btn btn-sm py-0 px-2"
                     @click="zoomToLayer"
                     :value="layer.getProperties().id"
@@ -596,7 +600,7 @@ export default {
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
      */
-    csvToDataGouv(csvString, fileName) {
+    geocodeCSVFrance(csvString, fileName) {
       const requestBody = new FormData();
       const app = this;
       requestBody.append('delimiter', ';');
@@ -632,7 +636,7 @@ export default {
     /**
      * From csv read as String, transform it as file and post it to get geocoding values
      */
-    csvToNominatim(csvString, fileName) {
+    geocodeCSVMonde(csvString, fileName) {
       const requestBody = new FormData();
       const app = this;
       requestBody.append(
@@ -640,7 +644,7 @@ export default {
         new Blob([csvString], { type: 'text/csv; charset=utf-8' }),
         'upload.csv'
       );
-      fetch('srv/geocode.php', {
+      fetch('srv/geocoder.php', {
         method: 'POST',
         body: requestBody
       })
@@ -694,14 +698,15 @@ export default {
     /**
     / From csv to geocode json object
     */
-    csvToApi(csvString, filename){
+    geocodeCSV(csvString, filename){
 
       // Check if CSV contains pays field
+      var country = "pays";
       var lines = csvString.split("\n");
-      if (lines[0].includes("pays")){
-        this.csvToNominatim(csvString, filename);
+      if ((lines[0].toUpperCase()).includes(country.toUpperCase())){
+        this.geocodeCSVMonde(csvString, filename);
       }else{
-        this.csvToDataGouv(csvString, filename);
+        this.geocodeCSVFrance(csvString, filename);
         // remove waiting panel
         this.isLoading = false;
       }
@@ -843,7 +848,7 @@ export default {
           } else if (format === 'KML') {
             app.readKml(file, e);
           } else if (app.geocodeData) {
-            app.csvToApi(e.target.result, file.name);
+            app.geocodeCSV(e.target.result, file.name);
           } else {
             app.csvToJsonPoints(file.name, Papa.parse(e.target.result).data);
           }

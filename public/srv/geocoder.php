@@ -1,10 +1,7 @@
 <?php
+require 'const.php';
 
 header('Content-type: application/json',true);
-
-//url d'appel du service nominatim
-$url = 'https://nominatim.openstreetmap.org/search?';
-
 
 if (isset($_FILES['data'])) {
 
@@ -53,7 +50,7 @@ if (isset($_FILES['data'])) {
                       'country' => trim($line[$pays]),
                       'format' => 'geojson',
                       'limit' => '1'));
-            $appel_api = file_get_contents($url.$params, false, $context_http);
+            $appel_api = file_get_contents(GEOCODER_URL.$params, false, $context_http);
 
             // no result
             if($appel_api == FALSE){
