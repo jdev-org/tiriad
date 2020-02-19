@@ -124,7 +124,7 @@
             <p id="geocodText" :style="{display: isGeocodage}">
               Pour localiser un fichier CSV, le fichier doit au moins contenir les colonnes suivantes :
               <br>
-              <i>Adresse, code_postal, ville</i>
+              <i>nom;code_categorie;adresse;code_postal;ville (et ;pays pour un geocodage monde)</i>
             </p>
             <b-field>
               <b-upload
@@ -148,7 +148,7 @@
               onclick="window.open('https://adresse.data.gouv.fr/api')"
               data-toggle="tooltip"
               data-html="true"
-              title="<em>Cliquer pour plus d'informations</em>"
+              title="<em>Cliquer pour plus d'informations sur le geocodage France</em>"
               type="button"
               class="btn"
             >
@@ -160,6 +160,12 @@
       </div>
       <exporter/>
     </div>
+    <div class="vld-parent">
+          <loading :active.sync="isLoading"
+          :can-cancel="false"
+          :is-full-page="true"
+          :loader="loaderType"></loading>
+      </div>
   </div>
 </template>
 <script>
@@ -169,6 +175,9 @@ import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import {GeoJSON, KML} from 'ol/format';
 import exporter from './exporter'
+import loading from 'vue-loading-overlay';
+
+import 'vue-loading-overlay/dist/vue-loading.css';
 
 // bootstrap tooltips
 $(document).ready(() => {
@@ -177,7 +186,10 @@ $(document).ready(() => {
 
 export default {
   name: 'toc',
-  components: {exporter},
+  components: {
+    exporter,
+    loading
+  },
   data() {
     return {
       dropFiles: [],
@@ -194,6 +206,8 @@ export default {
       banReverseResult: '',
       banAccuracy: 0.7,
       actionFailMsg: 'Echec de l\'action, merci de contacter votre assistance.',
+      isLoading: false,
+      loaderType: 'dots',
     };
   },
   methods: {
@@ -551,6 +565,9 @@ export default {
         geojsonLayer.crs.properties.name,
         fileName
       );
+      // remove waiting panel
+      this.isLoading = false;
+
       // display info about wrong location
       if (badScore.length > 0) {
         // clear alert
@@ -595,7 +612,17 @@ export default {
         method: 'POST',
         body: requestBody
       })
-        .then(res => res.text())
+        .then(function(response){
+          if(!response.ok){
+            // remove waiting panel
+            app.isLoading = false;
+            // display error message into alert component
+            $('#alertCloseBtn').trigger('click');
+            $('#mainAlert>div').text("Une erreur s'est produite durant le geocodage veuillez recommencer et vérifier votre fichier \n" +  response.statusText);
+            $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
+          }
+          return response.text();
+        })
         .then(text => {
           const csvParsed = Papa.parse(text);
           fileName = fileName.replace('.csv', '');
@@ -606,8 +633,8 @@ export default {
      * From csv read as String, transform it as file and post it to get geocoding values
      */
     csvToNominatim(csvString, fileName) {
-      // TODO add a waiting modal box
       const requestBody = new FormData();
+      const app = this;
       requestBody.append(
         'data',
         new Blob([csvString], { type: 'text/csv; charset=utf-8' }),
@@ -617,7 +644,13 @@ export default {
         method: 'POST',
         body: requestBody
       })
-        .then((response) => {return response.json().then((json) => {
+        .then(function(response){
+            if(!response.ok){
+              throw Error(response.statusText);
+            }
+            return response.json();
+          })
+            .then(function(json){
           if(json && !json.geocoded) {
               // display error message into alert component
               $('#alertCloseBtn').trigger('click');
@@ -625,11 +658,11 @@ export default {
               $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
             }else{
               fileName = fileName.replace('.csv', '');
-              this.displayJson(json.geocoded, 'EPSG:4326',fileName);
+              app.displayJson(json.geocoded, 'EPSG:4326',fileName);
 
               // show not geocoded adress
-              // TOOD change this by a function
-              if(json.notgeocoded){
+              // TODO change this by a function
+              if(json.notgeocoded && json.notgeocoded.length >0){
                 // clear alert
                 $('#alertCloseBtn').trigger('click');
                 // Create and insert alert content
@@ -645,19 +678,34 @@ export default {
                 $('#mainAlert').addClass('show');
               }
             }
+            // remove waiting panel
+            app.isLoading = false;
+
+          }).catch(function(error) {
+            // remove waiting panel
+            app.isLoading = false;
+            // display error message into alert component
+            $('#alertCloseBtn').trigger('click');
+            $('#mainAlert>div').text("Une erreur s'est produite durant le geocodage veuillez recommencer \n" +  error);
+            $('#mainAlert').attr('class', "alert alert-dismissible fade alert-danger show");
+
         })
-      })
     },
     /**
     / From csv to geocode json object
     */
     csvToApi(csvString, filename){
-      // To do check if CSV contains pays field
-      if(!this.$store.state.config.osmGeocodage){
-        this.csvToDataGouv(csvString, filename);
-      }else{
+
+      // Check if CSV contains pays field
+      var lines = csvString.split("\n");
+      if (lines[0].includes("pays")){
         this.csvToNominatim(csvString, filename);
+      }else{
+        this.csvToDataGouv(csvString, filename);
+        // remove waiting panel
+        this.isLoading = false;
       }
+
     },
     /**
      * Reproject features array
@@ -731,6 +779,8 @@ export default {
       let features = new KML().readFeatures(kmlString);
       let geojsonObject = (new GeoJSON).writeFeaturesObject(features);
       this.displayJson(geojsonObject, 'EPSG:4326',name);
+      // remove waiting panel
+      this.isLoading = false;
     },
     /*
      * read json file
@@ -751,6 +801,8 @@ export default {
           'Le fichier n\'est pas au format CSV, il n\'a pas été géocodé.'
         );
       }
+      // remove waiting panel
+      this.isLoading = false;
     },
     /**
      * Get file's format
@@ -772,11 +824,15 @@ export default {
      * Read upload file
      */
     readUploadFile() {
+
       const app = this;
       this.jsonLayerName = '';
       this.jsonFeatures = '';
       this.content = '';
       if (this.dropFiles.length > 0) {
+        // Show waiting panel
+        this.isLoading = true;
+
         // read file
         const file = this.dropFiles[this.dropFiles.length - 1];
         let encoding = this.getFormat(file.name);
@@ -793,6 +849,7 @@ export default {
           }
         });
       }
+
       this.dropFiles = [];
     }
   }

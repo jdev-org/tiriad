@@ -30,7 +30,7 @@ if (isset($_FILES['data'])) {
         $pays = array_search(strtolower('pays'), $lowerCaseHeaders);
 
         if( $adresse == FALSE || $code_postal == FALSE || $ville == FALSE){
-          echo '{"success":false, "message":"Some header informations are missing at least \'nom;code_categorie;adresse;code_postale;ville\' are required"}';
+          echo '{"success":false, "message":"Some header informations are missing at least \'nom;code_categorie;adresse;ville;pays\' are required"}';
         }else{
           $json = array();
           $errorsGeocoding = array();
@@ -45,10 +45,14 @@ if (isset($_FILES['data'])) {
 
           $nbResultat=0;
           while (($line = fgetcsv($fileHandle, "1024", ";")) !== FALSE) {
-
-            $queryAdresse = trim($line[$adresse]).','.trim($line[$code_postal]).' '.trim($line[$ville]);
             // limit 1 is required to avoid  multiple value for one point
-            $params = http_build_query(array('q' => $queryAdresse, 'format' => 'geojson', 'limit' => '1'));
+            $params = http_build_query(
+                array('street' => trim($line[$adresse]),
+                      'city' => trim($line[$ville]),
+                      'postalcode' => trim($line[$code_postal]),
+                      'country' => trim($line[$pays]),
+                      'format' => 'geojson',
+                      'limit' => '1'));
             $appel_api = file_get_contents($url.$params, false, $context_http);
 
             // no result
