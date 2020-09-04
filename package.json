@@ -19,7 +19,7 @@
     "core-js": "^2.6.11",
     "faker": "^4.1.0",
     "jquery": "^3.4.1",
-    "papaparse": "^4.6.3",
+    "papaparse": "^5.3.0",
     "popper.js": "^1.16.1",
     "vue": "^2.6.11",
     "vue-loading-overlay": "^3.3.0",
