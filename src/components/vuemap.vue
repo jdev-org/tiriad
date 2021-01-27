@@ -408,6 +408,7 @@ export default {
         app.maxClickedIndex = features.length - 1;
         app.$store.commit('setClicked', features);
         if(features.length) {
+          app.clickedIndex=0;
           app.showOverlay(features[0], popup);
         }
       });
