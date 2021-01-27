@@ -452,7 +452,7 @@ export default {
       $('#mainAlert>div>span').each((i,el) => {
         text.push(el.innerText)
       })
-      let content = text.join(', ')
+      let content = text.join('\r\n');
       // process to copy content
       let copyTest = document.queryCommandSupported('copy');
       if(copyTest) {
@@ -612,6 +612,7 @@ export default {
       requestBody.append('columns', 'adresse');
       requestBody.append('columns', 'code_postal');
       requestBody.append('columns', 'ville');
+      requestBody.append('postcode', 'code_postal');
       fetch('https://api-adresse.data.gouv.fr/search/csv/', {
         method: 'POST',
         body: requestBody
